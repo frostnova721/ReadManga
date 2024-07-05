@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import app.ice.readmanga.ui.pages.Home
+import app.ice.readmanga.ui.pages.Library
 import app.ice.readmanga.ui.pages.Search
 import app.ice.readmanga.ui.pages.Updates
 
@@ -32,6 +33,9 @@ fun BottomNavigationBarGraph(navController: NavHostController) {
         }
         composable("updates") {
             Updates()
+        }
+        composable("library") {
+            Library()
         }
     }
 }

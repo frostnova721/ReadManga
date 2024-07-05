@@ -1,5 +1,7 @@
 package app.ice.readmanga.ui.models
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Home
@@ -21,22 +23,31 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.File
+import compose.icons.feathericons.Folder
+import compose.icons.feathericons.Home
+import compose.icons.feathericons.PlusSquare
+import compose.icons.feathericons.Search
+import compose.icons.feathericons.Speaker
 
 @Composable
 fun BottomNavigationBar(navController: NavHostController) {
     val items = listOf(
-        BottomNavigationBarItem("Home", "home", Icons.Outlined.Home, Icons.Default.Home),
-        BottomNavigationBarItem("Search", "search", Icons.Outlined.Search, Icons.Default.Search),
+        BottomNavigationBarItem("Home", "home", FeatherIcons.Home),
+        BottomNavigationBarItem("Search", "search", FeatherIcons.Search),
         BottomNavigationBarItem(
             "Updates",
             "updates",
-            Icons.Outlined.AddCircle,
-            Icons.Default.AddCircle
-        )
+            FeatherIcons.PlusSquare
+        ),
+        BottomNavigationBarItem("Library", "library", FeatherIcons.Folder)
     )
 
     var selectedItem by remember { mutableIntStateOf(0) }
@@ -69,8 +80,7 @@ fun BottomNavigationBar(navController: NavHostController) {
                         selectedItem = index
                     }
                 }, icon = {
-                    val icon = if (index == selectedItem) item.selectedIcon else item.unSelectedicon
-                    Icon(icon, contentDescription = item.label)
+                    Icon(item.icon, contentDescription = item.label, modifier = Modifier.width(23.dp))
                 },
                 label = {
                     Text(item.label)
@@ -83,6 +93,5 @@ fun BottomNavigationBar(navController: NavHostController) {
 data class BottomNavigationBarItem(
     val label: String,
     val route: String,
-    val unSelectedicon: ImageVector,
-    val selectedIcon: ImageVector
+    val icon: ImageVector
 )

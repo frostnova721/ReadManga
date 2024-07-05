@@ -62,6 +62,12 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.17.2'
     implementation("io.ktor:ktor-client-core:2.3.11")
     implementation("io.ktor:ktor-client-cio:2.0.0")
+    implementation 'io.ktor:ktor-client-content-negotiation:2.3.12'
+    implementation "io.ktor:ktor-serialization-gson:2.3.12"
+    implementation 'com.google.code.gson:gson:2.11.0'
+
+//    icon pack
+    implementation("br.com.devsrsouza.compose.icons:feather:1.1.0")
 
     testImplementation 'junit:junit:4.13.2'
 

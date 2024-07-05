@@ -36,7 +36,7 @@ fun Home(navHostController: NavHostController) {
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Nigger nigger")
+            Text("Home")
         }
     }
 }
