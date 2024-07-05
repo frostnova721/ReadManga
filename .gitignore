@@ -1,6 +1,7 @@
 # Gradle files
 .gradle/
 build/
+.navigation
 
 # Local configuration file (sdk path, etc)
 local.properties
@@ -9,7 +10,10 @@ local.properties
 *.log
 
 # Secrets
-apikey.properties
+key.properties
+
+# Java class files
+*.class
 
 # Android Studio generated files and folders
 captures/
@@ -17,6 +21,8 @@ captures/
 .cxx/
 *.apk
 output.json
+*.ap_
+*.aab
 
 # IntelliJ
 *.iml
