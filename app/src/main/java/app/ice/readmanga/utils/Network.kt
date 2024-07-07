@@ -1,7 +1,6 @@
 package app.ice.readmanga.utils
 
-import com.google.gson.Gson
-import com.google.gson.JsonPrimitive
+
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -9,33 +8,36 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.ContentType.Application.Json
 import io.ktor.http.contentType
-import io.ktor.serialization.gson.gson
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
 import org.json.JSONObject
 
-suspend fun get(url: String): String {
-    val client = HttpClient()
-    val response = client.get(url)
-    return response.bodyAsText()
+public val client = HttpClient(CIO)
+
+suspend fun get(url: String): HttpResponse {
+    val res = client.get(url)
+    return res
 }
 
-suspend fun gqlRequest(url: String, query: String): String {
+suspend fun gqlRequest(url: String, query: String): HttpResponse  {
     val client = HttpClient(CIO) {
         install(ContentNegotiation) {
-            gson()
+            json(Json {
+                ignoreUnknownKeys = true
+            })
         }
     }
+    val reqBody = JSONObject().put("query", query).toString()
 
-    val reqBody = JSONObject().put("query", query)
-
-    val response = client.post(url){
-      setBody(reqBody.toString())
+    val res = client.post(url) {
+        setBody(reqBody)
         contentType(ContentType.Application.Json)
-    }.bodyAsText()
+    }
 
-    client.close()
-
-    return response;
+    return res;
 }

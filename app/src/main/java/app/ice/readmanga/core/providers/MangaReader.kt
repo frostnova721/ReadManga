@@ -6,6 +6,7 @@ import app.ice.readmanga.types.Chapters
 import app.ice.readmanga.types.ChaptersResult
 import app.ice.readmanga.types.SearchResult
 import app.ice.readmanga.utils.get
+import io.ktor.client.statement.bodyAsText
 import org.json.JSONObject
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
@@ -19,7 +20,7 @@ class MangaReader(context: Context): Provider() {
 
         val html = get(searchUrl);
 
-        val document: Document = Jsoup.parse(html)
+        val document: Document = Jsoup.parse(html.bodyAsText())
         val elements = document.select(".item.item-spc")
 
         val searchRes = mutableListOf<SearchResult>()
@@ -38,7 +39,7 @@ class MangaReader(context: Context): Provider() {
     override suspend fun getChapters(id: String): List<ChaptersResult> {
         val url = "$baseUrl/$id"
         val res = get(url)
-        val doc = Jsoup.parse(res)
+        val doc = Jsoup.parse(res.bodyAsText())
 
         val chapterResult = mutableListOf<ChaptersResult>()
 
@@ -65,7 +66,7 @@ class MangaReader(context: Context): Provider() {
 
     override suspend fun getPages(chapterLink: String, quality: String): List<String> {
         val res = get(chapterLink)
-        var doc = Jsoup.parse(res)
+        var doc = Jsoup.parse(res.bodyAsText())
 
         val readingId = doc.select("div#wrapper").attr("data-reading-id")
 
@@ -74,7 +75,7 @@ class MangaReader(context: Context): Provider() {
         val ajaxLink = "https://mangareader.to/ajax/image/list/chap/$readingId?mode=vertical&quality=$quality&hozPageSize=1";
 
         val apiRes = get(ajaxLink)
-        val jsonObject = JSONObject(apiRes)
+        val jsonObject = JSONObject(apiRes.bodyAsText())
         doc = Jsoup.parse(jsonObject.getString("html"))
         val pages = mutableListOf<String>()
         val elements = doc.select("div.iv-card")

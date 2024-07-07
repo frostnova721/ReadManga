@@ -4,21 +4,23 @@ import android.graphics.BitmapFactory
 import android.graphics.pdf.PdfDocument
 import android.os.Environment
 import android.util.Log
-import io.ktor.client.HttpClient
+import androidx.compose.ui.geometry.Rect
+import app.ice.readmanga.utils.client
 import io.ktor.client.request.get
 import io.ktor.client.statement.readBytes
 import io.ktor.http.HttpStatusCode
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 
 class Downloader {
 
     private suspend fun getImage(url: String): ByteArray? {
-        val client = HttpClient()
         val res = client.get(url)
         if(res.status != HttpStatusCode.OK) {
             Log.e("E-DOWN", "Couldn't download the image!")
-            throw Exception("CANT DOWNLOAD THIS SHIT")
+            throw Exception("CANT DOWNLOAD THIS IMAGE")
 //            return null;
         };
         println("Download success")
