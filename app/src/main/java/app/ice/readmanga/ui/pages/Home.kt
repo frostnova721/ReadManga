@@ -22,6 +22,7 @@ import androidx.navigation.NavHostController
 import app.ice.readmanga.core.Downloader
 import app.ice.readmanga.core.providers.MangaReader
 import app.ice.readmanga.types.ChaptersResult
+import app.ice.readmanga.ui.models.Cards
 import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
@@ -36,7 +37,6 @@ fun Home(navHostController: NavHostController) {
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Home")
         }
     }
 }

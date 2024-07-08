@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import app.ice.readmanga.ui.RootNavigationgraph
 import app.ice.readmanga.ui.pages.Home
 import app.ice.readmanga.ui.pages.MainScreen
 import app.ice.readmanga.ui.theme.ReadMangaTheme
@@ -25,14 +26,15 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
         setContent {
-
+            val navController = rememberNavController()
             ReadMangaTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen()
+                    RootNavigationgraph(navController = navController)
+//                MainScreen()
                 }
             }
         }

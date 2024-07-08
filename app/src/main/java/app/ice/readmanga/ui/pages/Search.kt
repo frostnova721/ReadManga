@@ -58,7 +58,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun Search(navHostController: NavHostController) {
 
-    var searchResults by rememberSaveable { mutableStateOf<List<AnilistSearchResult>>(emptyList()) }
+    var searchResults by remember { mutableStateOf<List<AnilistSearchResult>>(emptyList()) }
 
     var showFilterSheet by rememberSaveable {
         mutableStateOf(false)
@@ -137,10 +137,12 @@ fun Search(navHostController: NavHostController) {
                 modifier = Modifier.padding(start = 10.dp, end = 10.dp)
             ) {
                 items(searchResults.size) { index ->
-                    Cards().mangaCard(
+                    Cards(navController = navHostController).mangaCard(
+                        id = searchResults[index].id,
                         title = searchResults[index].title.english
                             ?: searchResults[index].title.romaji ?: "",
-                        imageUrl = searchResults[index].cover
+                        imageUrl = searchResults[index].cover,
+                        averageScore = searchResults[index].rating,
                     )
                 }
             }
