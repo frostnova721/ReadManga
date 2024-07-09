@@ -27,7 +27,7 @@ import coil.compose.AsyncImage
 import kotlinx.coroutines.launch
 
 @Composable
-fun Home(navHostController: NavHostController) {
+fun Home(rootController: NavHostController, barController: NavHostController) {
 
     val coroutineScope = rememberCoroutineScope()
     var searchResults by remember { mutableStateOf<List<String>>(emptyList()) }

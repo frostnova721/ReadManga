@@ -1,5 +1,6 @@
 package app.ice.readmanga.ui.pages
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
@@ -11,17 +12,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavGraph
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import app.ice.readmanga.ui.BottomBarNavigationGraph
+import app.ice.readmanga.R
 import app.ice.readmanga.ui.models.BottomNavigationBar
+import app.ice.readmanga.ui.navigator.MainScreenBottomBarGraph
 import app.ice.readmanga.ui.theme.Rubik
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(rootNavController: NavHostController) {
 
     val navController = rememberNavController();
     
@@ -47,7 +50,7 @@ fun MainScreen() {
         },
         content = { innerPadding ->
             Box(modifier = Modifier.padding(innerPadding)) {
-                BottomBarNavigationGraph(navController = navController)
+                MainScreenBottomBarGraph(rootNavController, navController = navController)
             }
 
         }

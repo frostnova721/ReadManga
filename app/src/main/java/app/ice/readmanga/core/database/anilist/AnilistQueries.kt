@@ -30,20 +30,17 @@ class AnilistQueries {
             title {
               romaji
               english
-              native
-              userPreferred
             }
             bannerImage
             synonyms
             coverImage {
               large
-              medium
             }
             genres
             description
             source
             type
-            episodes
+            chapters
             status
             nextAiringEpisode {
               episode
@@ -52,7 +49,6 @@ class AnilistQueries {
             }
             tags {
               name
-              category
             }
             startDate {
               year
@@ -65,17 +61,6 @@ class AnilistQueries {
               day
             },
             averageScore
-            studios {
-              edges {
-                isMain
-                node {
-                  isAnimationStudio
-                  name
-                  id
-                }
-              }
-            }
-            duration
             popularity
             characters {
               edges {
@@ -86,7 +71,6 @@ class AnilistQueries {
                   }
                   image {
                     large
-                    medium
                   }
                 }
                 role
@@ -101,11 +85,8 @@ class AnilistQueries {
             title {
               romaji
               english
-              native
-              userPreferred
             }
             coverImage {
-              extraLarge
               large
             }
             
@@ -121,10 +102,9 @@ class AnilistQueries {
             title {
               romaji
               english
-              native
             }
+            averageScore
             coverImage {
-              extraLarge
               large
             }
           }

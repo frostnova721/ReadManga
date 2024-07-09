@@ -54,11 +54,15 @@ import compose.icons.feathericons.Filter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+//fuck compose
+private val searchResults = mutableListOf<AnilistSearchResult>()
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Search(navHostController: NavHostController) {
+fun Search(rootController: NavHostController, barController: NavHostController) {
 
-    var searchResults by remember { mutableStateOf<List<AnilistSearchResult>>(emptyList()) }
+//    var searchResults by remember { mutableStateOf<List<AnilistSearchResult>>(emptyList()) }
 
     var showFilterSheet by rememberSaveable {
         mutableStateOf(false)
@@ -97,7 +101,8 @@ fun Search(navHostController: NavHostController) {
                             coroutineScope.launch {
                                 isSearching = true
                                 val sr = Anilist().search(searchText.text)
-                                searchResults = sr
+                                searchResults.clear()
+                                searchResults.addAll(sr)
                                 isSearching = false
                             }
                         }
@@ -137,7 +142,7 @@ fun Search(navHostController: NavHostController) {
                 modifier = Modifier.padding(start = 10.dp, end = 10.dp)
             ) {
                 items(searchResults.size) { index ->
-                    Cards(navController = navHostController).mangaCard(
+                    Cards(navController = rootController).mangaCard(
                         id = searchResults[index].id,
                         title = searchResults[index].title.english
                             ?: searchResults[index].title.romaji ?: "",

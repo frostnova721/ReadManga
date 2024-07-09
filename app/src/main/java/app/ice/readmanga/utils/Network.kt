@@ -1,6 +1,7 @@
 package app.ice.readmanga.utils
 
 
+import app.ice.readmanga.types.anilistResponses.AnilistResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.engine.cio.CIO
@@ -24,7 +25,7 @@ suspend fun get(url: String): HttpResponse {
     return res
 }
 
-suspend fun gqlRequest(url: String, query: String): HttpResponse  {
+suspend fun gqlRequest(url: String, query: String): AnilistResponse?  {
     val client = HttpClient(CIO) {
         install(ContentNegotiation) {
             json(Json {
@@ -39,5 +40,5 @@ suspend fun gqlRequest(url: String, query: String): HttpResponse  {
         contentType(ContentType.Application.Json)
     }
 
-    return res;
+    return res.body<AnilistResponse?>();
 }

@@ -5,7 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class AnilistSearchResponse(
+data class AnilistResponse(
     @SerialName("data")
     val data: AnilistData?
 )

@@ -28,7 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import app.ice.readmanga.ui.pages.Info
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import compose.icons.FeatherIcons
