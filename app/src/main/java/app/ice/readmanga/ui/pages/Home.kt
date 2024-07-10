@@ -37,6 +37,7 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
             modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Text(text = "To be implemented")
         }
     }
 }

@@ -1,5 +1,6 @@
 package app.ice.readmanga.ui.pages
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -41,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
@@ -75,6 +77,8 @@ fun Search(rootController: NavHostController, barController: NavHostController) 
         skipPartiallyExpanded = true
     )
 
+    val context = LocalContext.current
+
 
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -100,9 +104,14 @@ fun Search(rootController: NavHostController, barController: NavHostController) 
                         if (searchText.text.length > 1) {
                             coroutineScope.launch {
                                 isSearching = true
-                                val sr = Anilist().search(searchText.text)
-                                searchResults.clear()
-                                searchResults.addAll(sr)
+                                try {
+                                    val sr = Anilist().search(searchText.text)
+                                    searchResults.clear()
+                                    searchResults.addAll(sr)
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "something bad happened!", Toast.LENGTH_SHORT).show()
+                                    searchResults.clear()
+                                }
                                 isSearching = false
                             }
                         }
