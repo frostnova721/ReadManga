@@ -1,5 +1,7 @@
 package app.ice.readmanga.types.anilistResponses.components
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -63,6 +65,7 @@ data class AnilistMedia(
 
 )
 
+@Parcelize
 @Serializable
 data class AnilistFuzzyDateFormat(
     @SerialName("year")
@@ -73,7 +76,7 @@ data class AnilistFuzzyDateFormat(
 
     @SerialName("day")
     val day: Int?
-)
+) : Parcelable
 
 @Serializable
 data class AnilistTags(

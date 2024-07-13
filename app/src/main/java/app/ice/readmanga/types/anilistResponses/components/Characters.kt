@@ -1,5 +1,7 @@
 package app.ice.readmanga.types.anilistResponses.components
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -28,6 +30,7 @@ data class CharacterNode(
 
 )
 
+@Parcelize
 @Serializable
 data class CharacterName(
     @SerialName("full")
@@ -35,7 +38,7 @@ data class CharacterName(
 
     @SerialName("native")
     val native: String?,
-)
+) : Parcelable
 
 @Serializable
 data class CharacterImage(

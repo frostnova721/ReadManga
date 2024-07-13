@@ -6,7 +6,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import app.ice.readmanga.ui.pages.Home
-import app.ice.readmanga.ui.pages.Info
+import app.ice.readmanga.ui.pages.info.Info
 import app.ice.readmanga.ui.pages.Library
 import app.ice.readmanga.ui.pages.MainScreen
 import app.ice.readmanga.ui.pages.Search

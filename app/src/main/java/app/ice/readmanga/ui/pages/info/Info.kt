@@ -1,15 +1,13 @@
-package app.ice.readmanga.ui.pages
+package app.ice.readmanga.ui.pages.info
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -17,7 +15,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -38,21 +35,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
 import app.ice.readmanga.core.database.anilist.Anilist
 import app.ice.readmanga.types.AnilistInfoResult
 import coil.compose.AsyncImage
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
-import kotlinx.coroutines.launch
 
 
 @Composable
 fun Info(id: Int, rootNavigator: NavHostController) {
 
-    var info by remember { mutableStateOf<AnilistInfoResult?>(null) }
+    var info by rememberSaveable { mutableStateOf<AnilistInfoResult?>(null) }
 
     var showReadPage by remember { mutableStateOf(false) }
 
@@ -145,73 +139,7 @@ fun Info(id: Int, rootNavigator: NavHostController) {
                                     .padding(top = 15.dp)
 
                             )
-                            Box(
-                                modifier = Modifier
-                                    .padding(start = 15.dp, end = 15.dp, top = 20.dp)
-                                    .clip(RoundedCornerShape(20.dp))
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                                    .padding(
-                                        top = 10.dp,
-                                        bottom = 10.dp,
-                                        start = 15.dp,
-                                        end = 15.dp
-                                    )
-                            ) {
-                                Column {
-                                    infoItem(key = "source", label = info!!.source)
-                                    infoItem(
-                                        key = "chapters",
-                                        label = info!!.chapters?.toString() ?: "??"
-                                    )
-                                    infoItem(key = "status", label = info!!.status)
-                                    infoItem(
-                                        key = "rating",
-                                        label = ((info!!.rating ?: 0) / 10.0).toString()
-                                    )
-
-                                }
-                            }
-                            itemTitle(title = "Genres")
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                                info!!.genres!!.forEach { genre ->
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(start = 10.dp)
-                                            .clip(RoundedCornerShape(15))
-                                            .background(MaterialTheme.colorScheme.tertiaryContainer)
-                                    ) {
-                                        Text(text = genre, modifier = Modifier.padding(10.dp))
-                                    }
-                                }
-                            }
-                            itemTitle(title = "Tags")
-                            Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-                                info!!.tags!!.forEach { genre ->
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(start = 10.dp)
-                                            .clip(RoundedCornerShape(15))
-                                            .background(MaterialTheme.colorScheme.tertiaryContainer)
-                                    ) {
-                                        Text(text = genre, modifier = Modifier.padding(10.dp))
-                                    }
-                                }
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .padding(start = 15.dp, end = 15.dp, top = 40.dp)
-                                    .clip(RoundedCornerShape(25.dp))
-                                    .fillMaxWidth()
-                                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                            ) {
-                                Column {
-                                    itemTitle(title = "Description")
-                                    Text(info!!.description?.replace(Regex("""<[^>]*>"""), "") ?: "",
-                                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp)
-                                        )
-                                }
-                            }
+                            if(showReadPage) ReadSection() else InfoSection(info = info!!)
                         }
                     }
                 }
@@ -229,12 +157,7 @@ fun Info(id: Int, rootNavigator: NavHostController) {
 }
 
 @Composable
-fun readPage() {
-
-}
-
-@Composable
-fun itemTitle(title: String) {
+fun ItemTitle(title: String) {
     Text(
         title,
         fontSize = 20.sp,
@@ -248,9 +171,9 @@ fun itemTitle(title: String) {
 }
 
 @Composable
-fun infoItem(key: String, label: String?) {
+fun InfoItem(key: String, label: String?) {
     Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
         Text(key, fontWeight = FontWeight.Bold)
-        Text(label ?: "??")
+        Text(label?.lowercase() ?: "??")
     }
 }
