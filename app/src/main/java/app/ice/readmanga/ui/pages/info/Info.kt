@@ -23,6 +23,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -31,13 +32,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.ice.readmanga.core.database.anilist.Anilist
+import app.ice.readmanga.core.providers.MangaReader
 import app.ice.readmanga.types.AnilistInfoResult
+import app.ice.readmanga.types.Chapters
 import coil.compose.AsyncImage
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
@@ -46,15 +50,30 @@ import compose.icons.feathericons.ArrowLeft
 @Composable
 fun Info(id: Int, rootNavigator: NavHostController) {
 
+    val context = LocalContext.current
+
     var info by rememberSaveable { mutableStateOf<AnilistInfoResult?>(null) }
 
-    var showReadPage by remember { mutableStateOf(false) }
+    var showReadPage by rememberSaveable { mutableStateOf(false) }
+
+    var chapters by rememberSaveable {
+        mutableStateOf<List<Chapters?>>(listOf(null))
+    }
 
     LaunchedEffect(Unit) {
         if (info == null) {
             val res = Anilist().getInfo(id = id)
             info = res
             println("done!")
+        }
+        if (chapters[0] == null && info != null) {
+            println("hm")
+            val title = info!!.title.english ?: info!!.title.romaji ?: ""
+            val mangas = MangaReader(context).search(title)
+            val chaps = MangaReader(context).getChapters(mangas[0].id)
+            val eng = chaps.filter { item -> item.lang == "en" }
+            chapters = emptyList()
+            chapters = eng[0].chapters.reversed()
         }
     }
 
@@ -139,7 +158,7 @@ fun Info(id: Int, rootNavigator: NavHostController) {
                                     .padding(top = 15.dp)
 
                             )
-                            if(showReadPage) ReadSection() else InfoSection(info = info!!)
+                            if(showReadPage) ReadSection(chapters, rootNavigator) else InfoSection(info = info!!)
                         }
                     }
                 }

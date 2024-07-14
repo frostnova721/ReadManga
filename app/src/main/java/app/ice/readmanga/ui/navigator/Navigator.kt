@@ -1,16 +1,22 @@
 package app.ice.readmanga.ui.navigator
 
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import app.ice.readmanga.ui.pages.Home
 import app.ice.readmanga.ui.pages.info.Info
 import app.ice.readmanga.ui.pages.Library
 import app.ice.readmanga.ui.pages.MainScreen
+import app.ice.readmanga.ui.pages.Read
 import app.ice.readmanga.ui.pages.Search
 import app.ice.readmanga.ui.pages.Updates
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 
 @Composable
@@ -37,6 +43,11 @@ fun ReadMangaNavGraph(navController: NavHostController) {
             val args = requireNotNull(navBackStackEntry.arguments)
             val id = args.getString("id")?.toInt()
             Info(id = id!!, navController)
+        }
+        composable("read/{chapterId}", arguments = listOf(navArgument("chapterId") { type = NavType.StringType})) { navBackStackEntry ->
+            val args = requireNotNull(navBackStackEntry.arguments)
+            val chapterId = args.getString("chapterId")
+            Read(rootNavController = navController, chapterId!!)
         }
     }
 }

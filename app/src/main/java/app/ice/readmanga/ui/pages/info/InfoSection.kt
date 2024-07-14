@@ -53,7 +53,7 @@ fun InfoSection(info: AnilistInfoResult) {
                 modifier = Modifier
                     .padding(start = 10.dp)
                     .clip(RoundedCornerShape(15))
-                    .background(MaterialTheme.colorScheme.tertiaryContainer)
+                    .background(MaterialTheme.colorScheme.inverseOnSurface)
             ) {
                 Text(text = genre, modifier = Modifier.padding(10.dp))
             }
@@ -66,7 +66,7 @@ fun InfoSection(info: AnilistInfoResult) {
                 modifier = Modifier
                     .padding(start = 10.dp)
                     .clip(RoundedCornerShape(15))
-                    .background(MaterialTheme.colorScheme.tertiaryContainer)
+                    .background(MaterialTheme.colorScheme.inverseOnSurface)
             ) {
                 Text(text = genre, modifier = Modifier.padding(10.dp))
             }
