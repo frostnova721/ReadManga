@@ -9,5 +9,5 @@ abstract class Provider() {
 
     abstract suspend fun getChapters(id: String): List<ChaptersResult>
 
-    abstract suspend fun getPages(chapterLink: String, quality:String = "medium"): List<String>
+    abstract suspend fun getPages(chapterLink: String, quality:String = "medium"): List<String>?
 }

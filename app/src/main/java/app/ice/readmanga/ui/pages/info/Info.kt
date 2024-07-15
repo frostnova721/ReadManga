@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.ice.readmanga.core.database.anilist.Anilist
 import app.ice.readmanga.core.providers.MangaReader
+import app.ice.readmanga.core.source_handler.MangaSources
+import app.ice.readmanga.core.source_handler.SourceHandler
 import app.ice.readmanga.types.AnilistInfoResult
 import app.ice.readmanga.types.Chapters
 import coil.compose.AsyncImage
@@ -67,18 +69,26 @@ fun Info(id: Int, rootNavigator: NavHostController) {
             println("done!")
         }
         if (chapters[0] == null && info != null) {
-            println("hm")
-            val title = info!!.title.english ?: info!!.title.romaji ?: ""
-            val mangas = MangaReader(context).search(title)
-            val chaps = MangaReader(context).getChapters(mangas[0].id)
-            val eng = chaps.filter { item -> item.lang == "en" }
-            chapters = emptyList()
-            chapters = eng[0].chapters.reversed()
+            try {
+                val title = info!!.title.english ?: info!!.title.romaji ?: ""
+                val mangas = SourceHandler(MangaSources.MANGA_READER).search(title)
+                val chaps = SourceHandler(MangaSources.MANGA_READER).getChapters(mangas[0].id)
+                if (chaps.size != 0) {
+                    val eng = chaps.filter { item -> item.lang == "en" }
+                    chapters = emptyList()
+                    chapters = eng[0].chapters.reversed()
+                } else {
+                    chapters = emptyList()
+                }
+            } catch (e: Exception) {
+                chapters = emptyList()
+            }
         }
     }
 
     Scaffold(
         floatingActionButton = {
+            if(info != null)
             ExtendedFloatingActionButton(onClick = {
                 showReadPage = !showReadPage
             }) {

@@ -71,11 +71,11 @@ fun ReadSection(chapters: List<Chapters?>, rootNavHostController: NavHostControl
             Row {
 
             }
-            if (chapters[0] == null) CircularProgressIndicator()
+            if (chapters.isNotEmpty() && chapters[0] == null) CircularProgressIndicator()
             else
                 LazyVerticalGrid(columns = GridCells.Adaptive(75.dp), modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
                     items(chapters.size) { ind ->
-                        chapterItem(chapter = chapters[ind]!!, rootNavHostController)
+                        ChapterItem(chapter = chapters[ind]!!, rootNavHostController)
                     }
                 }
         }
@@ -83,7 +83,7 @@ fun ReadSection(chapters: List<Chapters?>, rootNavHostController: NavHostControl
 }
 
 @Composable
-fun chapterItem(chapter: Chapters, rootNavHostController: NavHostController) {
+fun ChapterItem(chapter: Chapters, rootNavHostController: NavHostController) {
     Box(
         modifier = Modifier
             .padding(5.dp)
@@ -96,7 +96,7 @@ fun chapterItem(chapter: Chapters, rootNavHostController: NavHostController) {
     ) {
         Text(chapter.chapter, modifier = Modifier.clickable {
             val encodedUrl = URLEncoder.encode(chapter.link, "UTF-8")
-            rootNavHostController.navigate("read/${encodedUrl}")
+            rootNavHostController.navigate("read/${encodedUrl}/${chapter.chapter}")
         })
     }
 }

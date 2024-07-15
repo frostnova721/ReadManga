@@ -44,10 +44,11 @@ fun ReadMangaNavGraph(navController: NavHostController) {
             val id = args.getString("id")?.toInt()
             Info(id = id!!, navController)
         }
-        composable("read/{chapterId}", arguments = listOf(navArgument("chapterId") { type = NavType.StringType})) { navBackStackEntry ->
+        composable("read/{chapterId}/{chapterNumber}") { navBackStackEntry ->
             val args = requireNotNull(navBackStackEntry.arguments)
             val chapterId = args.getString("chapterId")
-            Read(rootNavController = navController, chapterId!!)
+            val chapterNumber = args.getString("chapterNumber")!!
+            Read(rootNavController = navController, chapterId!!, chapterNumber)
         }
     }
 }
