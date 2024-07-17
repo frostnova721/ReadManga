@@ -18,7 +18,13 @@ import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.json.JSONObject
 
-public val client = HttpClient(CIO)
+public val client = HttpClient(CIO) {
+    install(ContentNegotiation) {
+        json(Json {
+            ignoreUnknownKeys = true
+        })
+    }
+}
 
 suspend fun get(url: String): HttpResponse {
     val res = client.get(url)
@@ -26,13 +32,13 @@ suspend fun get(url: String): HttpResponse {
 }
 
 suspend fun gqlRequest(url: String, query: String): AnilistResponse?  {
-    val client = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-            })
-        }
-    }
+//    val client = HttpClient(CIO) {
+//        install(ContentNegotiation) {
+//            json(Json {
+//                ignoreUnknownKeys = true
+//            })
+//        }
+//    }
     val reqBody = JSONObject().put("query", query).toString()
 
     val res = client.post(url) {

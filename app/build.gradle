@@ -64,6 +64,7 @@ dependencies {
     implementation 'org.jsoup:jsoup:1.17.2'
     implementation 'androidx.compose.runtime:runtime-livedata:1.6.8'
     implementation 'androidx.navigation:navigation-runtime-ktx:2.7.7'
+    implementation 'androidx.work:work-runtime-ktx:2.9.0'
 
     //ktor
     def ktorVersion = "2.3.12"

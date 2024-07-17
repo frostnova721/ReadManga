@@ -1,16 +1,18 @@
-package app.ice.readmanga.core
+package app.ice.readmanga.core.downloader
 
+import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.pdf.PdfDocument
 import android.os.Environment
 import android.util.Log
-import androidx.compose.ui.geometry.Rect
+import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.work.Data
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import app.ice.readmanga.utils.client
 import io.ktor.client.request.get
 import io.ktor.client.statement.readBytes
 import io.ktor.http.HttpStatusCode
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import java.io.File
 import java.io.FileOutputStream
 
@@ -29,7 +31,20 @@ class Downloader {
         return imageData;
     }
 
-    public suspend fun downloadAsPdf(urls: List<String>) {
+    suspend fun startDownload(urls: List<String>, fileName: String, context: Context) {
+        val downloadData = Data.Builder()
+            .putStringArray("urls", urls.toTypedArray())
+            .putString("fileName", fileName)
+            .build()
+
+        val downloadWorkRequest = OneTimeWorkRequestBuilder<DownloadWorker>()
+            .setInputData(downloadData)
+            .build()
+
+        WorkManager.getInstance(context).enqueue(downloadWorkRequest)
+    }
+
+    suspend fun downloadAsPdf(urls: List<String>, fileName: String) {
 //        val imageArray: MutableList<ByteArray> = mutableListOf<ByteArray>()
         val pdfDocument = PdfDocument()
 
@@ -44,14 +59,14 @@ class Downloader {
             canvas.drawBitmap(bmp, 0f, 0f, null)
             pdfDocument.finishPage(page)
         }
-
-        writeToStorage(pdfDocument)
+        val regex = "[^a-zA-Z0-9-\\s]".toRegex()
+        writeToStorage(pdfDocument, fileName.replace(regex, ""))
 
     }
 
-    private fun writeToStorage(pdf: PdfDocument) {
+    private fun writeToStorage(pdf: PdfDocument, fileName: String) {
         val dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString()
-        val filePath = "$dir/manga.pdf"
+        val filePath = "$dir/$fileName.pdf"
         val file = File(filePath)
 
         try {

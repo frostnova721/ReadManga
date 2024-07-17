@@ -1,5 +1,6 @@
-package app.ice.readmanga.ui.pages
+package app.ice.readmanga.ui.pages.read
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
@@ -10,18 +11,15 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -40,9 +38,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
@@ -64,6 +65,7 @@ fun Context.findActivity(): Activity? {
     return null
 }
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber: String) {
 
@@ -97,6 +99,13 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
     }
 
     val interactionSource = remember { MutableInteractionSource() }
+    val scale = remember {
+        mutableStateOf(1f)
+    }
+    var offsetX by remember { mutableStateOf(0f) }
+    var offsetY by remember { mutableStateOf(0f) }
+    var columnWidth by remember { mutableStateOf(0f) }
+    var columnHeight by remember { mutableStateOf(0f) }
 
     LaunchedEffect(Unit) {
         if (pages[0] == null) {
@@ -119,11 +128,35 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
         modifier = Modifier.clickable(
             indication = null,
             interactionSource = interactionSource
-        ) { showUi = !showUi }) { innerPadding ->
+        ) { showUi = !showUi }) {
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(start = 10.dp, end = 10.dp)
+                .pointerInput(Unit) {
+                    detectTransformGestures() { centroid, pan, zoom, rotation ->
+                        scale.value *= zoom
+                        val maxX = (columnWidth * (scale.value - 1)) / 2
+                        val minX = -maxX
+                        offsetX = (offsetX + pan.x).coerceIn(minX, maxX)
+
+                        val maxY = (columnHeight) / 2
+                        val minY = -maxY
+                        offsetY = (offsetY + pan.y).coerceIn(minY, maxY)
+                    }
+                }
+                .onGloballyPositioned { layoutCoordinates ->
+                    columnWidth = layoutCoordinates.size.width.toFloat()
+                    columnHeight = layoutCoordinates.size.height.toFloat()
+                }
+                .graphicsLayer(
+                    scaleX = maxOf(1f, minOf(3f, scale.value)),
+                    scaleY = maxOf(1f, minOf(3f, scale.value)),
+                    translationX = offsetX,
+                    translationY = offsetY
+                )
         ) {
             items(pages.size) { item ->
                 if (pages[item] == null) CircularProgressIndicator()
@@ -131,6 +164,7 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                     SubcomposeAsyncImage(
                         model = pages[item],
                         contentDescription = "page_$item",
+                        contentScale = ContentScale.FillWidth,
                         loading = {
                             Box(
                                 modifier = Modifier
@@ -139,7 +173,13 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                             ) {
                                 CircularProgressIndicator()
                             }
-                        })
+                        }, modifier = Modifier.fillMaxWidth()
+//                            .graphicsLayer(
+                        // adding some zoom limits (min 50%, max 200%)
+//                            scaleX = maxOf(1f, minOf(3f, scale.value)),
+//                            scaleY = maxOf(1f, minOf(3f, scale.value)),
+//                        ),
+                    )
                 }
             }
         }
@@ -165,7 +205,6 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                                 )
                             )
                         )
-                        .padding(innerPadding)
                         .padding(top = 60.dp)
                 ) {
                     Row(horizontalArrangement = Arrangement.Center) {
@@ -180,6 +219,7 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                             "Chapter: $chapterNumber",
                             fontSize = 18.sp,
                             color = Color.White,
+                            fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(start = 10.dp)
                         )
                     }
