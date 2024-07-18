@@ -12,22 +12,31 @@ data class MangadexResponse(
 
 @Serializable
 data class MangadexItem(
+    @SerialName("id")
     val id: String,
+
     @SerialName("attributes")
     val attributes: Attributes?,
+
     @SerialName("relationships")
     val relationships: List<Relationship>?
 )
 
 @Serializable
 data class Attributes(
+    @SerialName("title")
     val title: Title,
+
+    @SerialName("altTitles")
     val altTitles: List<Map<String, String>>,
+
+    @SerialName("tags")
     val tags: List<Tag>
 )
 
 @Serializable
 data class Title(
+    @SerialName("en")
     val en: String
 )
 
@@ -52,10 +61,11 @@ data class Relationship(
     val type: String,
 
     @SerialName("attributes")
-    val attributes: RelationshipAttributes?
+    val attributes: RelationshipAttributes? = null
 )
 
 @Serializable
 data class RelationshipAttributes(
-    val fileName: String
+    @SerialName("fileName")
+    val fileName: String?
 )

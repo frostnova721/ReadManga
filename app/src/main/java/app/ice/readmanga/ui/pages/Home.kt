@@ -34,7 +34,9 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
             Text(text = "To be implemented")
 
             Button(onClick = {
-                cosco.launch { MangaDex().search("") }
+                cosco.launch { val search = MangaDex().search("oreshura")
+                println(search)
+                }
 
             }) {
                 Text("perfrom shit!")
