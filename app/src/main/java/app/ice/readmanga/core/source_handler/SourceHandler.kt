@@ -1,5 +1,6 @@
 package app.ice.readmanga.core.source_handler
 
+import app.ice.readmanga.core.providers.MangaDex
 import app.ice.readmanga.core.providers.MangaReader
 import app.ice.readmanga.core.providers.Provider
 import app.ice.readmanga.types.ChaptersResult
@@ -9,6 +10,7 @@ class SourceHandler(private val source: String) {
     private fun getSource(source: String): Provider {
         when(source) {
             "manga_reader" -> return MangaReader()
+            "mangadex" -> return MangaDex()
         }
 
         throw Exception("UNKNOWN SOURCE")

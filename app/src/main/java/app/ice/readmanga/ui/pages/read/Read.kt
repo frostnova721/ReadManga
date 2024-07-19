@@ -12,9 +12,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -30,12 +33,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -99,13 +104,13 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
     }
 
     val interactionSource = remember { MutableInteractionSource() }
-    val scale = remember {
-        mutableStateOf(1f)
+
+    var scale by rememberSaveable {
+        mutableFloatStateOf(1f)
     }
-    var offsetX by remember { mutableStateOf(0f) }
-    var offsetY by remember { mutableStateOf(0f) }
-    var columnWidth by remember { mutableStateOf(0f) }
-    var columnHeight by remember { mutableStateOf(0f) }
+    var offset by remember {
+        mutableStateOf(androidx.compose.ui.geometry.Offset.Zero)
+    }
 
     LaunchedEffect(Unit) {
         if (pages[0] == null) {
@@ -129,101 +134,100 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
             indication = null,
             interactionSource = interactionSource
         ) { showUi = !showUi }) {
-        LazyColumn(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+        BoxWithConstraints(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(start = 10.dp, end = 10.dp)
-                .pointerInput(Unit) {
-                    detectTransformGestures() { centroid, pan, zoom, rotation ->
-                        scale.value *= zoom
-                        val maxX = (columnWidth * (scale.value - 1)) / 2
-                        val minX = -maxX
-                        offsetX = (offsetX + pan.x).coerceIn(minX, maxX)
-
-                        val maxY = (columnHeight) / 2
-                        val minY = -maxY
-                        offsetY = (offsetY + pan.y).coerceIn(minY, maxY)
-                    }
-                }
-                .onGloballyPositioned { layoutCoordinates ->
-                    columnWidth = layoutCoordinates.size.width.toFloat()
-                    columnHeight = layoutCoordinates.size.height.toFloat()
-                }
-                .graphicsLayer(
-                    scaleX = maxOf(1f, minOf(3f, scale.value)),
-                    scaleY = maxOf(1f, minOf(3f, scale.value)),
-                    translationX = offsetX,
-                    translationY = offsetY
-                )
         ) {
-            items(pages.size) { item ->
-                if (pages[item] == null) CircularProgressIndicator()
-                else {
-                    SubcomposeAsyncImage(
-                        model = pages[item],
-                        contentDescription = "page_$item",
-                        contentScale = ContentScale.FillWidth,
-                        loading = {
-                            Box(
-                                modifier = Modifier
-                                    .height(700.dp)
-                                    .fillMaxWidth(), contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator()
-                            }
-                        }, modifier = Modifier.fillMaxWidth()
-//                            .graphicsLayer(
-                        // adding some zoom limits (min 50%, max 200%)
-//                            scaleX = maxOf(1f, minOf(3f, scale.value)),
-//                            scaleY = maxOf(1f, minOf(3f, scale.value)),
-//                        ),
+            val state =
+                rememberTransformableState { zoomChange, panChange, rotationChange ->
+                    scale = (scale * zoomChange).coerceIn(1f, 5f)
+
+                    val extraWidth = (scale - 1) * constraints.maxWidth
+                    val extraHeight = (scale - 1) * constraints.maxHeight
+
+                    val maxX = extraWidth / 2
+                    val maxY = extraHeight / 2
+
+                    offset = Offset(
+                        x = (offset.x + scale * panChange.x).coerceIn(-maxX, maxX),
+                        y = (offset.y + scale * panChange.y).coerceIn(-maxY, maxY),
                     )
+                }
+            LazyColumn(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .fillMaxSize()
+                    .padding(start = 10.dp, end = 10.dp)
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        translationX = offset.x,
+                        translationY = offset.y
+                    )
+                    .transformable(state)
+            ) {
+                items(pages.size) { item ->
+                    if (pages[item] == null) CircularProgressIndicator()
+                    else {
+                        SubcomposeAsyncImage(
+                            model = pages[item],
+                            contentDescription = "page_$item",
+                            contentScale = ContentScale.FillWidth,
+                            loading = {
+                                Box(
+                                    modifier = Modifier
+                                        .height(700.dp)
+                                        .fillMaxWidth(), contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator()
+                                }
+                            }, modifier = Modifier.fillMaxWidth()
+                        )
+                    }
                 }
             }
         }
 
         //top bar
-        if (showUi)
-            AnimatedVisibility(
-                visible = showUi,
-                enter = fadeIn(animationSpec = tween(400)),
-                exit = fadeOut(animationSpec = tween(400))
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Black,
-                                    Color.Black.copy(alpha = 0.8F),
-                                    Color.Black.copy(alpha = 0.7F),
-                                    Color.Black.copy(alpha = 0.6F),
-                                    Color.Transparent
-                                )
+        AnimatedVisibility(
+            visible = showUi,
+            enter = fadeIn(animationSpec = tween(400)),
+            exit = fadeOut(animationSpec = tween(400))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Black,
+                                Color.Black.copy(alpha = 0.8F),
+                                Color.Black.copy(alpha = 0.7F),
+                                Color.Black.copy(alpha = 0.6F),
+                                Color.Transparent
                             )
                         )
-                        .padding(top = 60.dp)
-                ) {
-                    Row(horizontalArrangement = Arrangement.Center) {
-                        IconButton(onClick = { rootNavController.navigateUp() }) {
-                            Icon(
-                                FeatherIcons.ArrowLeft,
-                                contentDescription = "back",
-                                tint = Color.White
-                            )
-                        }
-                        Text(
-                            "Chapter: $chapterNumber",
-                            fontSize = 18.sp,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(start = 10.dp)
+                    )
+                    .padding(top = 60.dp)
+            ) {
+                Row(horizontalArrangement = Arrangement.Center) {
+                    IconButton(onClick = { rootNavController.navigateUp() }) {
+                        Icon(
+                            FeatherIcons.ArrowLeft,
+                            contentDescription = "back",
+                            tint = Color.White
                         )
                     }
+                    Text(
+                        "Chapter: $chapterNumber",
+                        fontSize = 18.sp,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(start = 10.dp)
+                    )
                 }
             }
+        }
     }
 }

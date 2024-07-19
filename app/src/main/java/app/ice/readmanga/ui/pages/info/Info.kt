@@ -68,8 +68,8 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
         if (chapters[0] == null && info != null) {
             try {
                 val title = info!!.title.english ?: info!!.title.romaji ?: ""
-                val mangas = SourceHandler(MangaSources.MANGA_READER).search(title)
-                val chaps = SourceHandler(MangaSources.MANGA_READER).getChapters(mangas[0].id)
+                val mangas = SourceHandler(MangaSources.MANGADEX).search(title)
+                val chaps = SourceHandler(MangaSources.MANGADEX).getChapters(mangas[0].id)
                 if (chaps.isNotEmpty()) {
                     val eng = chaps.filter { item -> item.lang == "en" }
                     chapters = emptyList()

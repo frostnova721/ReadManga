@@ -167,7 +167,7 @@ fun BottomSheetContent(infoSharedViewModel: InfoSharedViewModel, rootNavigator: 
             Button(
                 onClick = {
                     coroutineScope.launch {
-                        val urls = SourceHandler(MangaSources.MANGA_READER).getPages(
+                        val urls = SourceHandler(MangaSources.MANGADEX).getPages(
                             infoSharedViewModel.selectedChapterLink ?: error("no link my guy!!!")
                         )
                         if (urls == null) Toast.makeText(
