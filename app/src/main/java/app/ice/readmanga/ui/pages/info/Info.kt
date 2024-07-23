@@ -1,5 +1,9 @@
 package app.ice.readmanga.ui.pages.info
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,11 +17,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -28,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -45,6 +52,7 @@ import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSharedViewModel) {
 
@@ -83,24 +91,7 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
         }
     }
 
-    Scaffold(
-        floatingActionButton = {
-            if(info != null)
-            ExtendedFloatingActionButton(onClick = {
-                showReadPage = !showReadPage
-            }) {
-                Box(modifier = Modifier.width(50.dp)) {
-                    Text(
-                        if (showReadPage) "Info" else "Read",
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
-        }
-    ) { innerPadding ->
+    Scaffold { innerPadding ->
         if (info != null) {
             Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                 Box {
@@ -165,6 +156,32 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                                     .padding(top = 15.dp)
 
                             )
+                            Box(modifier = Modifier.align(Alignment.CenterHorizontally)
+                                .padding(top = 15.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface), shape = RoundedCornerShape(10.dp))
+                                .padding(8.dp)
+                            )
+                                 {
+                                Row(horizontalArrangement = Arrangement.Center) {
+                                    Box(modifier = Modifier
+                                        .clip(RoundedCornerShape(5.dp))
+                                        .background(if(showReadPage) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
+                                        .clickable { showReadPage = false}
+                                        .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
+                                    ) {
+                                        Text("info", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                    Box(modifier = Modifier
+                                        .clip(RoundedCornerShape(5.dp))
+                                        .background(if(!showReadPage) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
+                                        .clickable { showReadPage = true }
+                                        .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
+                                    ) {
+                                        Text("read", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                    }
+                                }
+                            }
                             if(showReadPage) ReadSection(chapters, infoSharedViewModel, rootNavigator) else InfoSection(info = info!!)
                         }
                     }

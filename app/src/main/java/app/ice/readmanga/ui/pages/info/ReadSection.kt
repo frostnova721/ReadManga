@@ -93,6 +93,7 @@ fun ReadSection(chapters: List<Chapters?>, infoSharedViewModel: InfoSharedViewMo
 
             }
             if (chapters.isNotEmpty() && chapters[0] == null) CircularProgressIndicator()
+            else if(chapters.isEmpty()) Text("Couldn't get any chapters")
             else
                 LazyVerticalGrid(
                     columns = GridCells.Adaptive(75.dp),

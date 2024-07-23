@@ -49,7 +49,7 @@ class MangaDex : Provider() {
         offset: Int,
         total: Int?
     ): List<MangadexItem> {
-        if (total != null && offset + 96 >= total) return emptyList()
+        if (total != null && offset >= total) return emptyList()
         val url =
             "https://api.mangadex.org/manga/${id}/feed?limit=96&order[volume]=desc&order[chapter]=desc&offset=${offset}&translatedLanguage[]=en"
         val res = get(url).body<MangadexResponse>()
@@ -62,6 +62,7 @@ class MangaDex : Provider() {
         val rawChapterData = getRawChapterList(id, 0, null)
 
         val chapters = mutableListOf<Chapters>()
+        println(id)
 
         for (ch in rawChapterData) {
             chapters.add(
@@ -71,7 +72,6 @@ class MangaDex : Provider() {
                 )
             )
         }
-
         return listOf(ChaptersResult(lang = "en", chapters = chapters))
     }
 

@@ -32,17 +32,6 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text = "To be implemented")
-
-            Button(onClick = {
-                cosco.launch {
-                    val search = MangaDex().search("Ore%20no%20Kanojo%20to%20Osananajimi%20ga%20Shuraba%20Sugiru")
-//                    val ch = MangaDex().getChapters(search[0].id)
-                    println(search)
-                }
-
-            }) {
-                Text("perfrom shit!")
-            }
         }
     }
 }
