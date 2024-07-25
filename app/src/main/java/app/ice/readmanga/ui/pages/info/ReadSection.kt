@@ -67,8 +67,8 @@ fun ReadSection(chapters: List<Chapters?>, infoSharedViewModel: InfoSharedViewMo
     Box(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(start = 20.dp, end = 20.dp, top = 40.dp, bottom = 20.dp)
             .height(600.dp)
-            .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 20.dp)
             .clip(shape = RoundedCornerShape(25.dp))
             .background(MaterialTheme.colorScheme.inverseOnSurface)
     ) {

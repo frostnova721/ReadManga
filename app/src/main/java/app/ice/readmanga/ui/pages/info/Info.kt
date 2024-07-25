@@ -1,5 +1,6 @@
 package app.ice.readmanga.ui.pages.info
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -16,14 +17,15 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,12 +36,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.ice.readmanga.core.database.anilist.Anilist
@@ -50,9 +53,9 @@ import app.ice.readmanga.types.Chapters
 import coil.compose.AsyncImage
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
+import compose.icons.feathericons.Calendar
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSharedViewModel) {
 
@@ -110,78 +113,115 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                             model = info!!.banner ?: info!!.cover,
                             contentDescription = "banner",
                             contentScale = ContentScale.Crop,
-                            alpha = 0.4F,
+                            alpha = 0.35F,
                             modifier = Modifier
                                 .fillMaxSize()
                         )
                     }
                     Box(modifier = Modifier.padding(innerPadding)) {
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            IconButton(onClick = {
+                            OutlinedIconButton(onClick = {
                                 rootNavigator.popBackStack()
                             }) {
                                 Icon(FeatherIcons.ArrowLeft, contentDescription = null)
                             }
-                            Box(
-                                modifier = Modifier
-                                    .padding(top = 30.dp)
-                                    .height(190.dp)
-                                    .width(130.dp)
-                                    .align(Alignment.CenterHorizontally)
-                                    .clip(RoundedCornerShape(10))
-                            ) {
-                                AsyncImage(
-                                    model = info!!.cover,
-                                    contentDescription = "cover",
-                                    modifier = Modifier.fillMaxSize(),
-                                    contentScale = ContentScale.FillBounds
-                                )
-                            }
-                            Text(
-                                text = info!!.title.english ?: info!!.title.romaji ?: "",
-                                fontSize = 23.sp,
-                                textAlign = TextAlign.Center,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier
-                                    .align(alignment = Alignment.CenterHorizontally)
-                                    .padding(top = 50.dp, start = 50.dp, end = 50.dp)
-                            )
-                            Text(
-                                text = info!!.type,
-                                fontWeight = FontWeight.Bold,
-                                textAlign = TextAlign.Center,
-                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5F),
-                                modifier = Modifier
-                                    .align(Alignment.CenterHorizontally)
-                                    .padding(top = 15.dp)
+                            Row {
+                                Box(
+                                    modifier = Modifier
+                                        .padding(top = 30.dp, start = 30.dp)
+                                        .height(180.dp)
+                                        .width(125.dp)
+//                                        .align(Alignment.Start)
+                                        .clip(RoundedCornerShape(10))
+                                ) {
+                                    AsyncImage(
+                                        model = info!!.cover,
+                                        contentDescription = "cover",
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.FillBounds
+                                    )
+                                }
+                                Column(modifier = Modifier
+                                    .padding(top = 50.dp, start = 20.dp, end = 30.dp)){
+                                    Text(
+                                        text = info!!.title.english ?: info!!.title.romaji ?: "",
+                                        fontSize = 20.sp,
+                                        textAlign = TextAlign.Left,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    Text(
+                                        text = info!!.type,
+                                        fontWeight = FontWeight.Bold,
+                                        textAlign = TextAlign.Center,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier
+                                            .padding(top = 10.dp)
 
-                            )
-                            Box(modifier = Modifier.align(Alignment.CenterHorizontally)
-                                .padding(top = 15.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface), shape = RoundedCornerShape(10.dp))
-                                .padding(8.dp)
-                            )
-                                 {
-                                Row(horizontalArrangement = Arrangement.Center) {
-                                    Box(modifier = Modifier
-                                        .clip(RoundedCornerShape(5.dp))
-                                        .background(if(showReadPage) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
-                                        .clickable { showReadPage = false}
-                                        .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
-                                    ) {
-                                        Text("info", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-                                    }
-                                    Box(modifier = Modifier
-                                        .clip(RoundedCornerShape(5.dp))
-                                        .background(if(!showReadPage) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
-                                        .clickable { showReadPage = true }
-                                        .padding(top = 5.dp, bottom = 5.dp, start = 10.dp, end = 10.dp)
-                                    ) {
-                                        Text("read", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.padding(top = 15.dp)) {
+                                        Button(
+                                            onClick = {
+                                                showReadPage = !showReadPage
+                                            },
+                                            shape = RoundedCornerShape(22.dp),
+                                            modifier = Modifier
+                                                .width(115.dp)
+                                                .height(55.dp)
+                                        ) {
+                                            Text(
+                                                if (showReadPage) "Read" else "Info",
+                                                fontSize = 23.sp,
+                                            )
+                                        }
+                                        FilledIconButton(onClick = { Toast.makeText(context, "not implied yet!", Toast.LENGTH_SHORT).show() },) {
+                                            Icon(FeatherIcons.Calendar, contentDescription = null, modifier = Modifier.height(20.dp))
+                                        }
                                     }
                                 }
                             }
+//                            Box(modifier = Modifier
+//                                .align(Alignment.CenterHorizontally)
+//                                .padding(top = 15.dp)
+//                                .clip(RoundedCornerShape(10.dp))
+//                                .border(
+//                                    BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface),
+//                                    shape = RoundedCornerShape(10.dp)
+//                                )
+//                                .padding(8.dp)
+//                            )
+//                                 {
+//                                Row(horizontalArrangement = Arrangement.Center) {
+//                                    Box(modifier = Modifier
+//                                        .clip(RoundedCornerShape(5.dp))
+//                                        .background(if (showReadPage) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
+//                                        .clickable { showReadPage = false }
+//                                        .padding(
+//                                            top = 5.dp,
+//                                            bottom = 5.dp,
+//                                            start = 10.dp,
+//                                            end = 10.dp
+//                                        )
+//                                    ) {
+//                                        Text("info", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+//                                    }
+//                                    Box(modifier = Modifier
+//                                        .clip(RoundedCornerShape(5.dp))
+//                                        .background(if (!showReadPage) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
+//                                        .clickable { showReadPage = true }
+//                                        .padding(
+//                                            top = 5.dp,
+//                                            bottom = 5.dp,
+//                                            start = 10.dp,
+//                                            end = 10.dp
+//                                        )
+//                                    ) {
+//                                        Text("read", fontSize = 20.sp, fontWeight = FontWeight.Bold)
+//                                    }
+//                                }
+//                            }
                             if(showReadPage) ReadSection(chapters, infoSharedViewModel, rootNavigator) else InfoSection(info = info!!)
                         }
                     }
@@ -207,8 +247,8 @@ fun ItemTitle(title: String) {
         fontWeight = FontWeight.Bold,
         modifier = Modifier.padding(
             top = 20.dp,
-            bottom = 15.dp,
-            start = 20.dp
+            bottom = 10.dp,
+//            start = 20.dp
         )
     )
 }

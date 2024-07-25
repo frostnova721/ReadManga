@@ -1,6 +1,7 @@
 package app.ice.readmanga.ui.pages.info
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,79 +13,52 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import app.ice.readmanga.types.AnilistInfoResult
+import java.util.Locale
 
 @Composable
 fun InfoSection(info: AnilistInfoResult) {
-    Box(
-        modifier = Modifier
-            .padding(start = 15.dp, end = 15.dp, top = 20.dp)
-            .clip(RoundedCornerShape(20.dp))
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-            .padding(
-                top = 10.dp,
-                bottom = 10.dp,
-                start = 15.dp,
-                end = 15.dp
-            )
-    ) {
-        Column {
-            InfoItem(key = "source", label = info.source)
-            InfoItem(
-                key = "chapters",
-                label = info.chapters?.toString() ?: "??"
-            )
-            InfoItem(key = "status", label = info.status)
-            InfoItem(
-                key = "rating",
-                label = ((info.rating ?: 0) / 10.0).toString()
-            )
+   var seeMoreSynopsis by remember {
+      mutableStateOf(false)
+   }
 
-        }
-    }
-    ItemTitle(title = "Genres")
-    Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-        info.genres!!.forEach { genre ->
-            Box(
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .clip(RoundedCornerShape(15))
-                    .background(MaterialTheme.colorScheme.inverseOnSurface)
-            ) {
-                Text(text = genre, modifier = Modifier.padding(10.dp))
-            }
-        }
-    }
-    ItemTitle(title = "Tags")
-    Row(modifier = Modifier.horizontalScroll(rememberScrollState())) {
-        info.tags!!.forEach { genre ->
-            Box(
-                modifier = Modifier
-                    .padding(start = 10.dp)
-                    .clip(RoundedCornerShape(15))
-                    .background(MaterialTheme.colorScheme.inverseOnSurface)
-            ) {
-                Text(text = genre, modifier = Modifier.padding(10.dp))
-            }
-        }
-    }
-    Box(
-        modifier = Modifier
-            .padding(start = 15.dp, end = 15.dp, top = 40.dp)
-            .clip(RoundedCornerShape(25.dp))
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.secondaryContainer)
-    ) {
-        Column {
-            ItemTitle(title = "Description")
-            Text(
-                info.description?.replace(Regex("""<[^>]*>"""), "") ?: "",
-                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp)
+   Column(modifier = Modifier.padding(top = 40.dp, start = 30.dp, end = 30.dp)) {
+      ItemTitle(title = "Genres")
+      Text(info.genres!!.joinToString(" • "), fontSize = 16.sp, color = Color.Gray,
+         )
+
+      ItemTitle(title = "Synopsis")
+      Box(modifier = Modifier
+         .clip(RoundedCornerShape(20.dp))
+         .clickable { seeMoreSynopsis = !seeMoreSynopsis }
+         .background(MaterialTheme.colorScheme.surfaceDim)
+         .padding(10.dp)
+      ) {
+         Text(text = info.description ?: "no description found",
+            maxLines = if(seeMoreSynopsis) Int.MAX_VALUE else 10,
+            overflow = TextOverflow.Ellipsis,
+            fontSize = 14.sp,
             )
-        }
-    }
+      }
+      ItemTitle(title = "More Info")
+      moreInfoItem(text = "Status: " +( info.status ?: ""))
+      moreInfoItem(text = "Source: " + (info.source ?: "unknown"))
+   }
+}
+
+@Composable
+fun moreInfoItem(text: String) {
+   Text(text = text.replace("_", "").lowercase(), fontWeight = FontWeight.Bold, fontSize = 15.sp)
 }
