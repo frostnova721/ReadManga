@@ -1,5 +1,7 @@
 package app.ice.readmanga.utils
 
+import android.content.Context
+import android.widget.Toast
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -7,6 +9,10 @@ data class MonthNumberToMonthNameResult(
     val full: String,
     val short: String,
 );
+
+fun showToast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+}
 
 fun MonthNumberToName(monthNumber: Int): MonthNumberToMonthNameResult {
     val monthName = listOf(

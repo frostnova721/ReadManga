@@ -12,13 +12,16 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -28,6 +31,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,9 +41,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -49,12 +57,18 @@ import app.ice.readmanga.types.Chapters
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.BookOpen
 import compose.icons.feathericons.Download
+import compose.icons.feathericons.File
+import compose.icons.feathericons.Folder
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReadSection(chapters: List<Chapters?>, infoSharedViewModel: InfoSharedViewModel, rootNavHostController: NavHostController) {
+fun ReadSection(
+    chapters: List<Chapters?>,
+    infoSharedViewModel: InfoSharedViewModel,
+    rootNavHostController: NavHostController
+) {
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
@@ -64,51 +78,89 @@ fun ReadSection(chapters: List<Chapters?>, infoSharedViewModel: InfoSharedViewMo
         showSheet = state
     }
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(start = 20.dp, end = 20.dp, top = 40.dp, bottom = 20.dp)
-            .height(600.dp)
-            .clip(shape = RoundedCornerShape(25.dp))
-            .background(MaterialTheme.colorScheme.inverseOnSurface)
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            OutlinedButton(
-                onClick = { },
-                modifier = Modifier.padding(top = 20.dp),
-                border = BorderStroke(color = MaterialTheme.colorScheme.primary, width = 1.dp)
-            ) {
-                Text(text = "source", fontSize = 20.sp)
-            }
-            Text(
-                text = "Chapters",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(top = 18.dp, bottom = 20.dp)
-            )
+    Column(modifier = Modifier.padding(top = 20.dp)) {
+        Box(modifier = Modifier.padding(bottom = 10.dp)) {
             Row {
-
-            }
-            if (chapters.isNotEmpty() && chapters[0] == null) CircularProgressIndicator()
-            else if(chapters.isEmpty()) Text("Couldn't get any chapters")
-            else
-                LazyVerticalGrid(
-                    columns = GridCells.Adaptive(75.dp),
-                    modifier = Modifier.padding(start = 10.dp, end = 10.dp)
+                Button(
+                    onClick = { /*TODO*/ }, colors = ButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceDim,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        disabledContentColor = Color.Gray,
+                        disabledContainerColor = Color.Gray,
+                    ),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .height(65.dp)
+                        .width(170.dp)
+                        .padding(start = 10.dp, end = 10.dp)
                 ) {
-                    items(chapters.size) { ind ->
-                        ChapterItem(
-                            chapter = chapters[ind]!!,
-                            rootNavHostController,
-                            infoSharedViewModel,
-                            changeSheetState = { sheetState -> changeSheetState(sheetState)}
-                        )
-                    }
+                    Icon(FeatherIcons.Folder, contentDescription = "source")
+                    Text(
+                        infoSharedViewModel.selectedSource,
+                        modifier = Modifier.padding(start = 5.dp)
+                    )
                 }
+                Button(
+                    onClick = { /*TODO*/ }, colors = ButtonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceDim,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        disabledContentColor = Color.Gray,
+                        disabledContainerColor = Color.Gray,
+                    ),
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .height(65.dp)
+                        .padding(end = 10.dp)
+                        .fillMaxWidth()
+                ) {
+                    Text(
+                        infoSharedViewModel.titleFoundInSource.collectAsState().value
+                            ?: "searching...",
+                        overflow = TextOverflow.Ellipsis,
+                        maxLines = 2
+                    )
+                }
+            }
         }
+        ItemTitle(title = "Chapters", 20)
+
+        if (chapters.isNotEmpty() && chapters[0] == null) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 40.dp)
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+        else if (chapters.isEmpty()) Box(
+            contentAlignment = Alignment.Center, modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp)
+        ) {
+            Text(
+                "Couldn't find any chapters! \n Try another source!",
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center
+            )
+        }
+        else LazyVerticalGrid(
+            columns = GridCells.Adaptive(75.dp),
+            modifier = Modifier
+                .heightIn(max = 500.dp)
+                .padding(start = 20.dp, end = 20.dp, top = 10.dp)
+        ) {
+            items(chapters.size) { index ->
+                ChapterItem(
+                    chapter = chapters[index]!!,
+                    rootNavHostController = rootNavHostController,
+                    sharedViewModel = infoSharedViewModel,
+                    changeSheetState =  { sheetState -> changeSheetState(sheetState)}
+                )
+            }
+        }
+
     }
 
     if (showSheet)
@@ -119,25 +171,34 @@ fun ReadSection(chapters: List<Chapters?>, infoSharedViewModel: InfoSharedViewMo
                 infoSharedViewModel.selectedChapterNumber = ""
             },
             sheetState = sheetState,
-            windowInsets = WindowInsets(0,0,0,0)
+            windowInsets = WindowInsets(0, 0, 0, 0)
         ) {
             BottomSheetContent(
                 infoSharedViewModel = infoSharedViewModel,
                 rootNavigator = rootNavHostController,
-                changeSheetState = { sheetState -> changeSheetState(sheetState)}
+                changeSheetState = { sheetState -> changeSheetState(sheetState) }
             )
         }
 
 }
 
 @Composable
-fun BottomSheetContent(infoSharedViewModel: InfoSharedViewModel, rootNavigator: NavHostController, changeSheetState: (Boolean) -> Unit) {
+fun BottomSheetContent(
+    infoSharedViewModel: InfoSharedViewModel,
+    rootNavigator: NavHostController,
+    changeSheetState: (Boolean) -> Unit
+) {
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     Column(modifier = Modifier.padding(WindowInsets.navigationBars.asPaddingValues())) {
-        Text("Chapter: ${infoSharedViewModel.selectedChapterNumber}", fontSize = 22.sp, fontWeight = FontWeight.Bold, modifier = Modifier
-            .padding(bottom = 16.dp)
-            .align(Alignment.CenterHorizontally))
+        Text(
+            "Chapter: ${infoSharedViewModel.selectedChapterNumber}",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier
+                .padding(bottom = 16.dp)
+                .align(Alignment.CenterHorizontally)
+        )
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Center,
@@ -168,7 +229,7 @@ fun BottomSheetContent(infoSharedViewModel: InfoSharedViewModel, rootNavigator: 
             Button(
                 onClick = {
                     coroutineScope.launch {
-                        val urls = SourceHandler(MangaSources.MANGADEX).getPages(
+                        val urls = SourceHandler(infoSharedViewModel.selectedSource).getPages(
                             infoSharedViewModel.selectedChapterLink ?: error("no link my guy!!!")
                         )
                         if (urls == null) Toast.makeText(
@@ -179,7 +240,11 @@ fun BottomSheetContent(infoSharedViewModel: InfoSharedViewModel, rootNavigator: 
                         else {
                             Toast.makeText(context, "Downloading...", Toast.LENGTH_SHORT).show()
                             val title = infoSharedViewModel.title ?: "manga"
-                            Downloader().startDownload(urls, "$title-${infoSharedViewModel.selectedChapterNumber}", context)
+                            Downloader().startDownload(
+                                urls,
+                                "$title-${infoSharedViewModel.selectedChapterNumber}",
+                                context
+                            )
                             changeSheetState(false)
                         }
                     }

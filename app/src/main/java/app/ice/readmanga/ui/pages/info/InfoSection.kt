@@ -34,7 +34,7 @@ fun InfoSection(info: AnilistInfoResult) {
       mutableStateOf(false)
    }
 
-   Column(modifier = Modifier.padding(top = 40.dp, start = 30.dp, end = 30.dp)) {
+   Column(modifier = Modifier.padding(start = 30.dp, end = 30.dp)) {
       ItemTitle(title = "Genres")
       Text(info.genres!!.joinToString(" • "), fontSize = 16.sp, color = Color.Gray,
          )

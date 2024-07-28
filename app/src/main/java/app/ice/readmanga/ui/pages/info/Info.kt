@@ -1,5 +1,6 @@
 package app.ice.readmanga.ui.pages.info
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -9,9 +10,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -50,6 +54,7 @@ import app.ice.readmanga.core.source_handler.MangaSources
 import app.ice.readmanga.core.source_handler.SourceHandler
 import app.ice.readmanga.types.AnilistInfoResult
 import app.ice.readmanga.types.Chapters
+import app.ice.readmanga.utils.showToast
 import coil.compose.AsyncImage
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
@@ -69,18 +74,27 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
         mutableStateOf<List<Chapters?>>(listOf(null))
     }
 
+    val source = MangaSources.MANGADEX
+
     LaunchedEffect(Unit) {
         if (info == null) {
-            val res = Anilist().getInfo(id = id)
-            info = res
-            infoSharedViewModel.title = res?.title?.english ?: res?.title?.romaji
-            println("done!")
+            try {
+                val res = Anilist().getInfo(id = id)
+                info = res
+                infoSharedViewModel.title = res?.title?.english ?: res?.title?.romaji
+                println("done!")
+            } catch (err: Exception) {
+                Log.e("INFO ERR", err.toString())
+                showToast(context, "Couldn't load the info page!")
+                rootNavigator.navigateUp()
+            }
         }
         if (chapters[0] == null && info != null) {
             try {
                 val title = info!!.title.english ?: info!!.title.romaji ?: ""
-                val mangas = SourceHandler(MangaSources.MANGADEX).search(title)
-                val chaps = SourceHandler(MangaSources.MANGADEX).getChapters(mangas[0].id)
+                val mangas = SourceHandler(source).search(title)
+                infoSharedViewModel.updateFoundTitle(mangas[0].title)
+                val chaps = SourceHandler(source).getChapters(mangas[0].id)
                 if (chaps.isNotEmpty()) {
                     val eng = chaps.filter { item -> item.lang == "en" }
                     chapters = emptyList()
@@ -96,7 +110,9 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
 
     Scaffold { innerPadding ->
         if (info != null) {
-            Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+            Column(modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding())) {
                 Box {
                     Box(
                         modifier = Modifier
@@ -174,6 +190,7 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                                             Text(
                                                 if (showReadPage) "Read" else "Info",
                                                 fontSize = 23.sp,
+                                                fontWeight = FontWeight.Bold
                                             )
                                         }
                                         FilledIconButton(onClick = { Toast.makeText(context, "not implied yet!", Toast.LENGTH_SHORT).show() },) {
@@ -182,50 +199,10 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                                     }
                                 }
                             }
-//                            Box(modifier = Modifier
-//                                .align(Alignment.CenterHorizontally)
-//                                .padding(top = 15.dp)
-//                                .clip(RoundedCornerShape(10.dp))
-//                                .border(
-//                                    BorderStroke(1.dp, MaterialTheme.colorScheme.onSurface),
-//                                    shape = RoundedCornerShape(10.dp)
-//                                )
-//                                .padding(8.dp)
-//                            )
-//                                 {
-//                                Row(horizontalArrangement = Arrangement.Center) {
-//                                    Box(modifier = Modifier
-//                                        .clip(RoundedCornerShape(5.dp))
-//                                        .background(if (showReadPage) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
-//                                        .clickable { showReadPage = false }
-//                                        .padding(
-//                                            top = 5.dp,
-//                                            bottom = 5.dp,
-//                                            start = 10.dp,
-//                                            end = 10.dp
-//                                        )
-//                                    ) {
-//                                        Text("info", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-//                                    }
-//                                    Box(modifier = Modifier
-//                                        .clip(RoundedCornerShape(5.dp))
-//                                        .background(if (!showReadPage) MaterialTheme.colorScheme.background else MaterialTheme.colorScheme.primaryContainer)
-//                                        .clickable { showReadPage = true }
-//                                        .padding(
-//                                            top = 5.dp,
-//                                            bottom = 5.dp,
-//                                            start = 10.dp,
-//                                            end = 10.dp
-//                                        )
-//                                    ) {
-//                                        Text("read", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-//                                    }
-//                                }
-//                            }
-                            if(showReadPage) ReadSection(chapters, infoSharedViewModel, rootNavigator) else InfoSection(info = info!!)
                         }
                     }
                 }
+                if(showReadPage) ReadSection(chapters, infoSharedViewModel, rootNavigator) else InfoSection(info = info!!)
             }
         } else {
             Column(
@@ -240,7 +217,7 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
 }
 
 @Composable
-fun ItemTitle(title: String) {
+fun ItemTitle(title: String, startPadding: Int = 0) {
     Text(
         title,
         fontSize = 20.sp,
@@ -248,7 +225,7 @@ fun ItemTitle(title: String) {
         modifier = Modifier.padding(
             top = 20.dp,
             bottom = 10.dp,
-//            start = 20.dp
+            start = startPadding.dp
         )
     )
 }
