@@ -39,6 +39,7 @@ fun MainScreen(rootNavController: NavHostController) {
 
     Scaffold(
         topBar = {
+            if(titles[currentRoute] != "ReadManga")
             TopAppBar(title = {
                 Row {
                     Text(text = titles[currentRoute] ?: "ReadManga", fontFamily = Rubik, fontSize = 26.sp )

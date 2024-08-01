@@ -66,6 +66,9 @@ dependencies {
     implementation 'androidx.navigation:navigation-runtime-ktx:2.7.7'
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
 
+    //data store
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
     //ktor
     def ktorVersion = "2.3.12"
     implementation("io.ktor:ktor-client-core:$ktorVersion")

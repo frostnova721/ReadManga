@@ -51,9 +51,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.ice.readmanga.core.downloader.Downloader
+import app.ice.readmanga.core.local.MangaProgress
 import app.ice.readmanga.core.source_handler.MangaSources
 import app.ice.readmanga.core.source_handler.SourceHandler
 import app.ice.readmanga.types.Chapters
+import app.ice.readmanga.types.MangaProgressList
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.BookOpen
 import compose.icons.feathericons.Download
@@ -136,8 +138,8 @@ fun ReadSection(
         }
         else if (chapters.isEmpty()) Box(
             contentAlignment = Alignment.Center, modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 20.dp)
+                .fillMaxWidth()
+                .padding(top = 20.dp)
         ) {
             Text(
                 "Couldn't find any chapters! \n Try another source!",
@@ -273,6 +275,8 @@ fun ChapterItem(
     sharedViewModel: InfoSharedViewModel,
     changeSheetState: (Boolean) -> Unit,
 ) {
+    val context = LocalContext.current
+    val cosco = rememberCoroutineScope()
     Box(
         modifier = Modifier
             .padding(5.dp)
@@ -283,6 +287,9 @@ fun ChapterItem(
                 detectTapGestures(
                     onTap = {
                         val encodedUrl = URLEncoder.encode(chapter.link, "UTF-8")
+                        cosco.launch {
+                            MangaProgress().updateProgress(context = context, MangaProgressList(title = sharedViewModel.title ?: "no title", cover = sharedViewModel.coverImage!!, read = chapter.chapter.toFloat(), total = null))
+                        }
                         rootNavHostController.navigate("read/${encodedUrl}/${chapter.chapter}")
                     },
                     onLongPress = {
