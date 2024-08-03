@@ -135,8 +135,7 @@ fun ReadSection(
             ) {
                 CircularProgressIndicator()
             }
-        }
-        else if (chapters.isEmpty()) Box(
+        } else if (chapters.isEmpty()) Box(
             contentAlignment = Alignment.Center, modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp)
@@ -158,7 +157,7 @@ fun ReadSection(
                     chapter = chapters[index]!!,
                     rootNavHostController = rootNavHostController,
                     sharedViewModel = infoSharedViewModel,
-                    changeSheetState =  { sheetState -> changeSheetState(sheetState)}
+                    changeSheetState = { sheetState -> changeSheetState(sheetState) }
                 )
             }
         }
@@ -288,7 +287,16 @@ fun ChapterItem(
                     onTap = {
                         val encodedUrl = URLEncoder.encode(chapter.link, "UTF-8")
                         cosco.launch {
-                            MangaProgress().updateProgress(context = context, MangaProgressList(title = sharedViewModel.title ?: "no title", cover = sharedViewModel.coverImage!!, read = chapter.chapter.toFloat(), total = null))
+                            MangaProgress().updateProgress(
+                                context = context,
+                                MangaProgressList(
+                                    id = sharedViewModel.id ?: 0,
+                                    title = sharedViewModel.title ?: "no title",
+                                    cover = sharedViewModel.coverImage!!,
+                                    read = chapter.chapter.toFloat(),
+                                    total = null
+                                )
+                            )
                         }
                         rootNavHostController.navigate("read/${encodedUrl}/${chapter.chapter}")
                     },

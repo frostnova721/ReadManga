@@ -51,7 +51,8 @@ class MangaProgress {
 
     suspend fun updateProgress(context: Context, manga: MangaProgressList) {
         val currentList = getProgress(context).first()
-        val updated = currentList + manga
+        val filtered = currentList.filterNot { it.id == manga.id }
+        val updated = filtered + manga
         saveProgress(context, updated)
     }
 }

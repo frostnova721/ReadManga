@@ -83,6 +83,7 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                 info = res
                 infoSharedViewModel.title = res?.title?.english ?: res?.title?.romaji
                 infoSharedViewModel.coverImage = res?.cover
+                infoSharedViewModel.id = id
                 println("done!")
             } catch (err: Exception) {
                 Log.e("INFO ERR", err.toString())

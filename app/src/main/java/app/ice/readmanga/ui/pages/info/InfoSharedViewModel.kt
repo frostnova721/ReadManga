@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 class InfoSharedViewModel : ViewModel() {
     var title: String? = null
     var coverImage: String? = null
+    var id: Int? = null
 
     private val _titleFoundInSource = MutableStateFlow<String?>(null)
     val titleFoundInSource: StateFlow<String?> get() = _titleFoundInSource
