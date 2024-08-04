@@ -19,13 +19,13 @@ class MangaProgress {
     private val progressKey = stringPreferencesKey("progressList")
     private val json = Json { ignoreUnknownKeys = true }
 
-    suspend fun getProgress(context: Context): Flow<List<MangaProgressList>> {
+    fun getProgress(context: Context): Flow<List<MangaProgressList>> {
         return context.mangaProgressDataStore.data.map { perf ->
             val string = perf[progressKey] ?: ""
             if(string.isNotEmpty() && string != "[]") {
                 json.decodeFromString<List<MangaProgressList>>(string)
             } else {
-                emptyList<MangaProgressList>()
+                emptyList()
             }
         }
     }

@@ -1,5 +1,6 @@
 package app.ice.readmanga.ui.pages
 
+import android.annotation.SuppressLint
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -22,6 +23,7 @@ import app.ice.readmanga.ui.navigator.MainScreenBottomBarGraph
 import app.ice.readmanga.ui.theme.Rubik
 
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(rootNavController: NavHostController) {
@@ -50,7 +52,7 @@ fun MainScreen(rootNavController: NavHostController) {
             BottomNavigationBar(navController = navController)
         },
         content = { innerPadding ->
-            Box(modifier = Modifier.padding(innerPadding)) {
+            Box(modifier = if(titles[currentRoute] != "ReadManga")Modifier.padding(innerPadding) else Modifier) {
                 MainScreenBottomBarGraph(rootNavController, navController = navController)
             }
 

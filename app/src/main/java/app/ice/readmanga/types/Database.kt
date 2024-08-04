@@ -58,3 +58,13 @@ data class AnilistInfoResult(
     val recommenations: List<RecommendationSimplified>?,
     val relations: List<RecommendationSimplified>?,
 ) : Parcelable
+
+@Parcelize
+data class AnilistTrendingResult(
+    val id: Int,
+    val title: MangaTitle,
+    val genres: List<String>?,
+    val rating: Int?,
+    val banner: String?,
+    val cover: String
+): Parcelable

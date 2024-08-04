@@ -2,6 +2,7 @@ package app.ice.readmanga.core.database.anilist
 
 import app.ice.readmanga.types.AnilistInfoResult
 import app.ice.readmanga.types.AnilistSearchResult
+import app.ice.readmanga.types.AnilistTrendingResult
 import app.ice.readmanga.types.CharactersSimplified
 import app.ice.readmanga.types.MangaTitle
 import app.ice.readmanga.types.RecommendationSimplified
@@ -130,5 +131,32 @@ class Anilist {
         )
 
         return info;
+    }
+
+    suspend fun getTrending(): List<AnilistTrendingResult> {
+        val query = AnilistQueries().trendingQuery
+        val res = gqlRequest(url, query)
+        val media = res?.data?.page?.media ?: return emptyList();
+
+        val trendingItems = mutableListOf<AnilistTrendingResult>()
+
+        media.forEach() { item ->
+            trendingItems.add(
+                AnilistTrendingResult(
+                    id = item.id!!,
+                    title = MangaTitle(
+                        english = item.title?.english,
+                        romaji = item.title?.romaji,
+                    ),
+                    cover = item.cover.large,
+                    rating = item.averageScore,
+                    genres = item.genres,
+                    banner = item.banner
+                )
+            )
+        }
+
+        return trendingItems
+
     }
 }
