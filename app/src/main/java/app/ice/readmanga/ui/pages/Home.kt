@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -20,7 +21,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -95,9 +100,11 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                 modifier = Modifier
                     .height(340.dp)
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceDim)
+//                    .background(MaterialTheme.colorScheme.surfaceDim)
             ) {
                 HorizontalPager(state = pagerState) { page ->
+                    val offset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+
                     Box(modifier = Modifier.clickable {
                         val id = trendingList[page].id
                         rootController.navigate("info/$id")
@@ -106,10 +113,13 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                             model = trendingList[page].banner ?: trendingList[page].cover,
                             contentDescription = null,
                             contentScale = ContentScale.Crop,
+                            alpha = 0.6f,
                             modifier = Modifier
                                 .fillMaxSize()
-                                .blur(8.dp),
-                            alpha = 0.8f,
+                                .blur(8.dp)
+                                .graphicsLayer() {
+                                    translationX = offset * size.width * 0.7f
+                                }
                         )
                         Row(
                             modifier = Modifier
@@ -137,7 +147,8 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                 Text(
                                     trendingList[page].genres?.joinToString(", ") ?: "",
                                     fontSize = 16.sp,
-                                    color = Color.Gray,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Bold,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                     modifier = Modifier.padding(top = 10.dp)
@@ -154,12 +165,15 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                             bottom = 5.dp
                                         )
                                 ) {
-                                    Text(
-                                        "${(trendingList[page].rating ?: 0) / 10}/10",
-                                        color = MaterialTheme.colorScheme.onPrimary,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 16.sp
-                                    )
+                                    Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Filled.Star, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(end = 5.dp).height(20.dp))
+                                        Text(
+                                            "${(trendingList[page].rating ?: 0) / 10}/10",
+                                            color = MaterialTheme.colorScheme.onPrimary,
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 16.sp
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -221,7 +235,8 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                         Row {
                                             AsyncImage(
                                                 model = it.cover,
-                                                contentDescription = null
+                                                contentDescription = null,
+                                                modifier = Modifier.fillMaxHeight()
                                             )
                                             Column {
                                                 Text(
@@ -235,6 +250,7 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                                         start = 5.dp
                                                     )
                                                 )
+                                                Text("${it.read ?: "??"} / ${it.total ?: "??"}", fontSize = 15.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 5.dp, start = 5.dp))
                                             }
                                         }
                                     }

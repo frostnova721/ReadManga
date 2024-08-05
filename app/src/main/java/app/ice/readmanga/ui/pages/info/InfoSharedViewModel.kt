@@ -18,6 +18,12 @@ class InfoSharedViewModel : ViewModel() {
         _titleFoundInSource.value = newTitle
     }
 
+    private val _readChapters = MutableStateFlow<Float?>(null)
+    val readChapters: StateFlow<Float?> get() = _readChapters
+
+    fun updateReadChapters(chapter: Float) {
+        _readChapters.value = chapter
+    }
 
     var selectedChapterLink: String? = null
     var selectedChapterNumber: String? = null

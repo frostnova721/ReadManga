@@ -1,6 +1,7 @@
 package app.ice.readmanga.utils
 
 
+import android.util.Log
 import app.ice.readmanga.types.anilistResponses.AnilistResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -32,19 +33,17 @@ suspend fun get(url: String): HttpResponse {
 }
 
 suspend fun gqlRequest(url: String, query: String): AnilistResponse?  {
-//    val client = HttpClient(CIO) {
-//        install(ContentNegotiation) {
-//            json(Json {
-//                ignoreUnknownKeys = true
-//            })
-//        }
-//    }
-    val reqBody = JSONObject().put("query", query).toString()
+    try {
+        val reqBody = JSONObject().put("query", query).toString()
 
-    val res = client.post(url) {
-        setBody(reqBody)
-        contentType(ContentType.Application.Json)
+        val res = client.post(url) {
+            setBody(reqBody)
+            contentType(ContentType.Application.Json)
+        }
+
+        return res.body<AnilistResponse?>();
+    } catch (err: Exception) {
+        Log.e("REQ_ERR", err.message ?: "Error while sending post req")
+        return null;
     }
-
-    return res.body<AnilistResponse?>();
 }

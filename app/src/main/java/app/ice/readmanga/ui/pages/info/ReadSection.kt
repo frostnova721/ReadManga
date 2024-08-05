@@ -1,8 +1,10 @@
 package app.ice.readmanga.ui.pages.info
 
+import android.widget.Button
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,6 +24,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -56,6 +59,7 @@ import app.ice.readmanga.core.source_handler.MangaSources
 import app.ice.readmanga.core.source_handler.SourceHandler
 import app.ice.readmanga.types.Chapters
 import app.ice.readmanga.types.MangaProgressList
+import app.ice.readmanga.utils.showToast
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.BookOpen
 import compose.icons.feathericons.Download
@@ -74,6 +78,8 @@ fun ReadSection(
 
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
 
 
     fun changeSheetState(state: Boolean) {
@@ -124,6 +130,41 @@ fun ReadSection(
                 }
             }
         }
+
+        if (chapters.isNotEmpty()) {
+            OutlinedButton(
+                onClick = {
+                    try {
+                        val savedChapterString = ((infoSharedViewModel.readChapters.value ?: 0f) + 1).toString()
+                        val split = savedChapterString.split(".");
+                        val chapterString: String = if(split[1] == "0") split[0] else savedChapterString
+                        val chapter =
+                            chapters.find {
+                                    it?.chapter == chapterString
+                            }
+                        if(chapter != null) {
+                            val encodedUrl = URLEncoder.encode(chapter.link, "UTF-8")
+                            rootNavHostController.navigate("read/${encodedUrl}/${chapter.chapter}")
+                        }
+                    } catch (err: Exception) {
+                        showToast(context = context, "Couldn't navigate")
+                        println(err.message)
+                    }
+                },
+                shape = RoundedCornerShape(15.dp),
+                border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+                modifier = Modifier
+                    .height(60.dp)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    "Continue from: ${(infoSharedViewModel.readChapters.collectAsState().value ?: 0f) + 1}",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 16.sp
+                )
+            }
+        }
+
         ItemTitle(title = "Chapters", 20)
 
         if (chapters.isNotEmpty() && chapters[0] == null) {

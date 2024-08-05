@@ -53,6 +53,6 @@ class MangaProgress {
         val currentList = getProgress(context).first()
         val filtered = currentList.filterNot { it.id == manga.id }
         val updated = filtered + manga
-        saveProgress(context, updated)
+        saveProgress(context, updated.reversed())
     }
 }

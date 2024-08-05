@@ -1,5 +1,6 @@
 package app.ice.readmanga.ui.pages.info
 
+import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -50,6 +51,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import app.ice.readmanga.core.database.anilist.Anilist
+import app.ice.readmanga.core.local.MangaProgress
 import app.ice.readmanga.core.source_handler.MangaSources
 import app.ice.readmanga.core.source_handler.SourceHandler
 import app.ice.readmanga.types.AnilistInfoResult
@@ -59,7 +61,14 @@ import coil.compose.AsyncImage
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Calendar
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 
+private suspend fun getChaptersReadForThisMangaOrManhuaOrWhatever(id: Int, context: Context): Float? {
+    val mangas = MangaProgress().getProgress(context).first()
+    val filteredOutItem = mangas.first { it.id == id }
+    return filteredOutItem.read
+}
 
 @Composable
 fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSharedViewModel) {
@@ -84,7 +93,11 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                 infoSharedViewModel.title = res?.title?.english ?: res?.title?.romaji
                 infoSharedViewModel.coverImage = res?.cover
                 infoSharedViewModel.id = id
-                println("done!")
+
+                val readChapters = getChaptersReadForThisMangaOrManhuaOrWhatever(id, context)
+                infoSharedViewModel.updateReadChapters(readChapters ?: 0f)
+
+                println("done loading infos!")
             } catch (err: Exception) {
                 Log.e("INFO ERR", err.toString())
                 showToast(context, "Couldn't load the info page!")

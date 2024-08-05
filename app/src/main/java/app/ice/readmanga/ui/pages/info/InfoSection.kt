@@ -37,7 +37,11 @@ fun InfoSection(info: AnilistInfoResult) {
    Column(modifier = Modifier.padding(start = 30.dp, end = 30.dp)) {
       ItemTitle(title = "Genres")
       Text(info.genres!!.joinToString(" • "), fontSize = 16.sp, color = Color.Gray,
-         )
+         modifier = Modifier.padding(bottom = 10.dp) )
+
+      ItemTitle(title = "Titles")
+      Text("• ${info.title.english}", fontWeight = FontWeight.Bold, modifier = Modifier.padding(start = 15.dp))
+      Text("• ${info.title.romaji}", fontWeight = FontWeight.Bold, modifier = Modifier.padding(bottom = 10.dp, start = 15.dp))
 
       ItemTitle(title = "Synopsis")
       Box(modifier = Modifier
@@ -53,12 +57,13 @@ fun InfoSection(info: AnilistInfoResult) {
             )
       }
       ItemTitle(title = "More Info")
-      moreInfoItem(text = "Status: " +( info.status ?: ""))
-      moreInfoItem(text = "Source: " + (info.source ?: "unknown"))
+      moreInfoItem(text = "Status: " +( info.status ?: "??"))
+      moreInfoItem(text = "Source: " + (info.source ?: "??"))
+      moreInfoItem(text = "Rating: " + (if(info.rating == null) "??" else info.rating / 10) + "/10")
    }
 }
 
 @Composable
 fun moreInfoItem(text: String) {
-   Text(text = text.replace("_", "").lowercase(), fontWeight = FontWeight.Bold, fontSize = 15.sp)
+   Text(text = text.replace("_", ""), fontWeight = FontWeight.Bold, fontSize = 15.sp)
 }

@@ -23,14 +23,23 @@ class SourceHandler(private val source: String) {
     }
 
     suspend fun getChapters(id: String): List<ChaptersResult> {
-        val src = getSource(source)
-        val res = src.getChapters(id)
-        return res
+        try {
+            val src = getSource(source)
+            val res = src.getChapters(id)
+            return res
+        } catch (err: Exception) {
+            return emptyList();
+        }
     }
 
     suspend fun getPages(chapterLink: String): List<String>? {
-        val src = getSource(source)
-        val res = src.getPages(chapterLink)
-        return res
+        try {
+            val src = getSource(source)
+            val res = src.getPages(chapterLink)
+            return res
+        } catch (err: Exception) {
+            println(err)
+            return null;
+        }
     }
 }
