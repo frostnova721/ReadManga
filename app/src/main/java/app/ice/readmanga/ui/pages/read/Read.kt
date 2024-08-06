@@ -77,6 +77,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import app.ice.readmanga.R
+import app.ice.readmanga.core.local.MangaProgress
 import app.ice.readmanga.core.source_handler.MangaSources
 import app.ice.readmanga.core.source_handler.SourceHandler
 import coil.compose.SubcomposeAsyncImage
@@ -85,6 +86,7 @@ import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Bookmark
 import compose.icons.feathericons.SkipBack
 import compose.icons.feathericons.SkipForward
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
@@ -101,7 +103,7 @@ fun Context.findActivity(): Activity? {
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber: String) {
+fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber: String, id: Int) {
 
     val context = LocalContext.current
     val cosco = rememberCoroutineScope()
@@ -123,6 +125,10 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                 systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
             }
         }
+    }
+
+    var currentChapter by rememberSaveable {
+        mutableStateOf(chapterNumber)
     }
 
     var showUi by rememberSaveable {
@@ -154,10 +160,24 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
         mutableStateOf(false)
     }
 
+    val tresholdPercentage = 75
+
     LaunchedEffect(lazyListState) {
         snapshotFlow {
             lazyListState.firstVisibleItemIndex
-        }.collect { index ->  if(!isScrollAnimating)sliderPosition = index.toFloat() }
+        }.distinctUntilChanged().collect { index ->
+            if (!isScrollAnimating) sliderPosition = index+2.toFloat()
+            val percent = (index / pages.size-1) * 100
+
+            //might change later!
+            if(percent >= tresholdPercentage) {
+                val currentChapterSplit = chapterNumber.split(".")
+                if(currentChapterSplit.size == 1)
+                    MangaProgress().updateProgressWithId(context, id = id, progress = (currentChapter.toFloatOrNull() ?: 0f) + 1)
+                else
+                    MangaProgress().updateProgressWithId(context, id = id, progress = (currentChapter.toFloatOrNull() ?: 0f) + 0.5f)
+            }
+        }
     }
 
     LaunchedEffect(Unit) {
@@ -303,7 +323,7 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                                     isScrollAnimating = false
                                 }
                             },
-                            valueRange = 0f..(if(pages.size - 1 > 1) pages.size-2 else pages.size-1).toFloat(),
+                            valueRange = 0f..(if (pages.size - 3 > 0) pages.size - 3 else 1).toFloat(),
                             thumb = {
                                 Box(
                                     modifier = Modifier
@@ -314,7 +334,13 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                                 )
                             }
                         )
-                        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth().padding(start = 10.dp, end = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 10.dp, end = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
                             Button(onClick = {}) {
                                 Icon(FeatherIcons.SkipBack, contentDescription = "prev chapter")
                             }
@@ -327,7 +353,7 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                                     .padding(start = 15.dp, end = 15.dp)
                             ) {
                                 Text(
-                                    "${sliderPosition.toInt() + 2} / ${pages.size}",
+                                    "${sliderPosition.roundToInt()} / ${pages.size}",
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                                     fontWeight = FontWeight.Bold
                                 )

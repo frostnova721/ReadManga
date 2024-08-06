@@ -28,6 +28,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import app.ice.readmanga.ui.navigator.Routes
 import coil.ImageLoader
 import coil.compose.AsyncImage
 import compose.icons.FeatherIcons
@@ -41,7 +42,7 @@ class Cards(private val navController: NavController) {
             .width(130.dp)
             .padding(5.dp)
             .clickable {
-                navController.navigate(route = "info/$id")
+                navController.navigate(Routes.InfoRoute(id= id))
             }
         ) {
             Column(

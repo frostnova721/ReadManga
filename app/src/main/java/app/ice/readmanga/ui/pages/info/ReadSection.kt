@@ -59,6 +59,7 @@ import app.ice.readmanga.core.source_handler.MangaSources
 import app.ice.readmanga.core.source_handler.SourceHandler
 import app.ice.readmanga.types.Chapters
 import app.ice.readmanga.types.MangaProgressList
+import app.ice.readmanga.ui.navigator.Routes
 import app.ice.readmanga.utils.showToast
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.BookOpen
@@ -143,8 +144,8 @@ fun ReadSection(
                                     it?.chapter == chapterString
                             }
                         if(chapter != null) {
-                            val encodedUrl = URLEncoder.encode(chapter.link, "UTF-8")
-                            rootNavHostController.navigate("read/${encodedUrl}/${chapter.chapter}")
+//                            val encodedUrl = URLEncoder.encode(chapter.link, "UTF-8")
+                            rootNavHostController.navigate(Routes.ReadRoute(chapterLink = chapter.link, chapterNumber = chapterString, id = infoSharedViewModel.id!!))
                         }
                     } catch (err: Exception) {
                         showToast(context = context, "Couldn't navigate")
@@ -250,9 +251,25 @@ fun BottomSheetContent(
         ) {
             Button(
                 onClick = {
-                    val encodedUrl =
-                        URLEncoder.encode(infoSharedViewModel.selectedChapterLink!!, "UTF-8")
-                    rootNavigator.navigate("read/$encodedUrl/${infoSharedViewModel.selectedChapterNumber}")
+                    coroutineScope.launch {
+                        MangaProgress().updateProgress(
+                            context = context,
+                            MangaProgressList(
+                                id = infoSharedViewModel.id ?: 0,
+                                title = infoSharedViewModel.title ?: "no title",
+                                cover = infoSharedViewModel.coverImage!!,
+                                read = infoSharedViewModel.selectedChapterNumber!!.toFloat() - 1,
+                                total = null
+                            )
+                        )
+                    }
+                    rootNavigator.navigate(
+                        Routes.ReadRoute(
+                            chapterLink = infoSharedViewModel.selectedChapterLink!!,
+                            chapterNumber = infoSharedViewModel.selectedChapterNumber!!,
+                            id = infoSharedViewModel.id!!
+                        )
+                    )
                 }, modifier = Modifier
                     .padding(end = 10.dp)
                     .width(150.dp)
@@ -326,7 +343,7 @@ fun ChapterItem(
             .pointerInput(Unit) {
                 detectTapGestures(
                     onTap = {
-                        val encodedUrl = URLEncoder.encode(chapter.link, "UTF-8")
+//                        val encodedUrl = URLEncoder.encode(chapter.link, "UTF-8")
                         cosco.launch {
                             MangaProgress().updateProgress(
                                 context = context,
@@ -334,12 +351,12 @@ fun ChapterItem(
                                     id = sharedViewModel.id ?: 0,
                                     title = sharedViewModel.title ?: "no title",
                                     cover = sharedViewModel.coverImage!!,
-                                    read = chapter.chapter.toFloat(),
+                                    read = chapter.chapter.toFloat() - 1,
                                     total = null
                                 )
                             )
                         }
-                        rootNavHostController.navigate("read/${encodedUrl}/${chapter.chapter}")
+                        rootNavHostController.navigate(Routes.ReadRoute(chapterLink = chapter.link, chapterNumber = chapter.chapter, id = sharedViewModel.id!!))
                     },
                     onLongPress = {
                         sharedViewModel.selectedChapterLink = chapter.link

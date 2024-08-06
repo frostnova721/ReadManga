@@ -37,16 +37,11 @@ class MangaProgress {
         }
     }
 
-    suspend fun updateProgressWithTitle(context: Context, title: String, progress: Float) {
+    suspend fun updateProgressWithId(context: Context, id: Int, progress: Float) {
         val currentList = getProgress(context).first()
-        val updatedList = currentList.map { item ->
-            if(item.title == title) {
-                item.copy(read = progress)
-            } else {
-                item
-            }
-        }
-        saveProgress(context, updatedList)
+        val updatedItem = currentList.first { it.id == id }
+        val filteredList = currentList.filterNot { it.id == id }
+        saveProgress(context, filteredList + updatedItem)
     }
 
     suspend fun updateProgress(context: Context, manga: MangaProgressList) {

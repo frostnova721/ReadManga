@@ -1,5 +1,7 @@
 package app.ice.readmanga.ui.pages
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,13 +26,13 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,7 +41,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -52,9 +53,10 @@ import app.ice.readmanga.core.database.anilist.Anilist
 import app.ice.readmanga.core.local.MangaProgress
 import app.ice.readmanga.types.AnilistTrendingResult
 import app.ice.readmanga.types.MangaProgressList
-import app.ice.readmanga.types.MangaTitle
+import app.ice.readmanga.ui.navigator.Routes
 import app.ice.readmanga.ui.theme.Rubik
 import coil.compose.AsyncImage
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -75,7 +77,20 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
     val cosco = rememberCoroutineScope()
     val context = LocalContext.current
 
-    val pagerState = rememberPagerState(initialPage = 1, pageCount = { trendingList.size })
+    val pagerState = rememberPagerState(initialPage = 0, pageCount = { trendingList.size })
+
+    LaunchedEffect(key1 = pagerState.settledPage) {
+        launch {
+            delay(5000)
+            with(pagerState) {
+                val target = if (currentPage < trendingList.size - 1) currentPage + 1 else 0
+                pagerState.animateScrollToPage(page = target, animationSpec = tween(
+                    durationMillis = 400,
+                    easing = FastOutSlowInEasing
+                ))
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         if (!recentsLoaded) {
@@ -98,93 +113,117 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
         ) {
             Box(
                 modifier = Modifier
-                    .height(340.dp)
+                    .height(350.dp)
                     .fillMaxWidth()
 //                    .background(MaterialTheme.colorScheme.surfaceDim)
             ) {
-                HorizontalPager(state = pagerState) { page ->
-                    val offset = (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
+                if (trendingLoaded && trendingList.isNotEmpty()) {
+                    HorizontalPager(state = pagerState) { page ->
+                        val offset =
+                            (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
 
-                    Box(modifier = Modifier.clickable {
-                        val id = trendingList[page].id
-                        rootController.navigate("info/$id")
-                    }) {
-                        AsyncImage(
-                            model = trendingList[page].banner ?: trendingList[page].cover,
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            alpha = 0.6f,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .blur(8.dp)
-                                .graphicsLayer() {
-                                    translationX = offset * size.width * 0.7f
-                                }
-                        )
-                        Row(
-                            modifier = Modifier
-                                .padding(top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 80.dp, start = 30.dp, end = 30.dp)
-                        ) {
+                        val item = trendingList[page]
+
+                        Box(modifier = Modifier.clickable {
+                            val id = item.id
+                            rootController.navigate(Routes.InfoRoute(id = id))
+                        }) {
                             AsyncImage(
-                                model = trendingList[page].cover,
+                                model = item.banner ?: item.cover,
                                 contentDescription = null,
+                                contentScale = ContentScale.Crop,
+                                alpha = 0.6f,
                                 modifier = Modifier
-                                    .height(180.dp)
-                                    .width(115.dp)
-                                    .clip(
-                                        RoundedCornerShape(10.dp)
-                                    )
+                                    .fillMaxSize()
+                                    .blur(8.dp)
+                                    .graphicsLayer() {
+                                        translationX = offset * size.width * 0.65f
+                                    }
                             )
-                            Column(modifier = Modifier.padding(start = 17.dp, top = 15.dp)) {
-                                Text(
-                                    trendingList[page].title.english
-                                        ?: trendingList[page].title.romaji ?: "no_title",
-                                    fontSize = 21.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis
-                                )
-                                Text(
-                                    trendingList[page].genres?.joinToString(", ") ?: "",
-                                    fontSize = 16.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    fontWeight = FontWeight.Bold,
-                                    maxLines = 1,
-                                    overflow = TextOverflow.Ellipsis,
-                                    modifier = Modifier.padding(top = 10.dp)
-                                )
-                                Box(
+                            Row(
+                                modifier = Modifier
+                                    .padding(
+                                        top = WindowInsets.statusBars.asPaddingValues()
+                                            .calculateTopPadding() + 80.dp,
+                                        start = 30.dp,
+                                        end = 30.dp
+                                    )
+                            ) {
+                                AsyncImage(
+                                    model = item.cover,
+                                    contentDescription = null,
                                     modifier = Modifier
-                                        .padding(top = 15.dp)
-                                        .clip(RoundedCornerShape(50))
-                                        .background(MaterialTheme.colorScheme.primary)
-                                        .padding(
-                                            start = 10.dp,
-                                            end = 10.dp,
-                                            top = 5.dp,
-                                            bottom = 5.dp
+                                        .height(180.dp)
+                                        .width(115.dp)
+                                        .clip(
+                                            RoundedCornerShape(10.dp)
                                         )
-                                ) {
-                                    Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(Icons.Filled.Star, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.padding(end = 5.dp).height(20.dp))
-                                        Text(
-                                            "${(trendingList[page].rating ?: 0) / 10}/10",
-                                            color = MaterialTheme.colorScheme.onPrimary,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 16.sp
-                                        )
+                                )
+                                Column(modifier = Modifier.padding(start = 17.dp, top = 15.dp)) {
+                                    Text(
+                                        item.title.english
+                                            ?: item.title.romaji ?: "no_title",
+                                        fontSize = 21.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                    Text(
+                                        item.genres?.joinToString(", ") ?: "",
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        fontWeight = FontWeight.Bold,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.padding(top = 10.dp)
+                                    )
+                                    Box(
+                                        modifier = Modifier
+                                            .padding(top = 15.dp)
+                                            .clip(RoundedCornerShape(50))
+                                            .background(MaterialTheme.colorScheme.primary)
+                                            .padding(
+                                                start = 10.dp,
+                                                end = 10.dp,
+                                                top = 5.dp,
+                                                bottom = 5.dp
+                                            )
+                                    ) {
+                                        Row(
+                                            horizontalArrangement = Arrangement.Center,
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                Icons.Filled.Star,
+                                                contentDescription = null,
+                                                tint = MaterialTheme.colorScheme.onPrimary,
+                                                modifier = Modifier
+                                                    .padding(end = 5.dp)
+                                                    .height(20.dp)
+                                            )
+                                            Text(
+                                                "${(item.rating ?: 0) / 10}/10",
+                                                color = MaterialTheme.colorScheme.onPrimary,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 16.sp
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
+                } else {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 Row(
                     horizontalArrangement = Arrangement.Start,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
-                            top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding() + 10.dp,
+                            top = WindowInsets.statusBars
+                                .asPaddingValues()
+                                .calculateTopPadding() + 10.dp,
                             bottom = 20.dp,
                             start = 16.dp
                         )
@@ -219,7 +258,7 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                             .fillMaxWidth()
                             .padding(top = 15.dp)
                     ) {
-                        items(progressList.chunked(2)) { pair ->
+                        items(progressList.chunked(2).reversed()) { pair ->
                             Column(modifier = Modifier.padding(end = 10.dp)) {
                                 pair.forEach {
                                     Box(
@@ -229,7 +268,7 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                             .width(240.dp)
                                             .background(MaterialTheme.colorScheme.secondaryContainer)
                                             .clickable {
-                                                rootController.navigate("info/${it.id}")
+                                                rootController.navigate(Routes.InfoRoute(id = it.id))
                                             }
                                     ) {
                                         Row {
@@ -250,7 +289,15 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                                         start = 5.dp
                                                     )
                                                 )
-                                                Text("${it.read ?: "??"} / ${it.total ?: "??"}", fontSize = 15.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(top = 5.dp, start = 5.dp))
+                                                Text(
+                                                    "${it.read ?: "??"} / ${it.total ?: "??"}",
+                                                    fontSize = 15.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    modifier = Modifier.padding(
+                                                        top = 5.dp,
+                                                        start = 5.dp
+                                                    )
+                                                )
                                             }
                                         }
                                     }

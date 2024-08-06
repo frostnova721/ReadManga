@@ -117,7 +117,7 @@ class AnilistQueries {
 
     val trendingQuery = """{
   Page(perPage: 25) {
-    media(type: MANGA, sort: TRENDING, isAdult: false) {
+    media(type: MANGA, sort: TRENDING_DESC, isAdult: false) {
       id
       title {
         english
