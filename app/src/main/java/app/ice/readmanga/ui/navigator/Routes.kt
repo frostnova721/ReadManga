@@ -1,6 +1,5 @@
 package app.ice.readmanga.ui.navigator
 
-import androidx.navigation.NavHostController
 import kotlinx.serialization.Serializable
 
 object Routes {

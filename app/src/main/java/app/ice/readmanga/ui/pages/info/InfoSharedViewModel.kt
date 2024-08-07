@@ -1,12 +1,17 @@
 package app.ice.readmanga.ui.pages.info
 
+import android.os.Parcelable
 import androidx.lifecycle.ViewModel
 import app.ice.readmanga.core.source_handler.MangaSources
 import app.ice.readmanga.types.MangaProgressList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-class InfoSharedViewModel : ViewModel() {
+@Parcelize
+@Serializable
+class InfoSharedViewModel : ViewModel(), Parcelable {
     var title: String? = null
     var coverImage: String? = null
     var id: Int? = null

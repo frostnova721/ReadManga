@@ -1,6 +1,7 @@
 package app.ice.readmanga.core.local
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -31,6 +32,7 @@ class MangaProgress {
     }
 
     private suspend fun saveProgress(context: Context, mangaList: List<MangaProgressList>) {
+        Log.i("SAVE", "Saving progress...")
         val jsonString = json.encodeToString(mangaList)
         context.mangaProgressDataStore.edit{ perf ->
             perf[progressKey] = jsonString
@@ -40,13 +42,14 @@ class MangaProgress {
     suspend fun updateProgressWithId(context: Context, id: Int, progress: Float) {
         val currentList = getProgress(context).first()
         val updatedItem = currentList.first { it.id == id }
-        val filteredList = currentList.filterNot { it.id == id }
+        val filteredList = if(currentList.size > 40) currentList.filterNot { it.id == id }.subList(0,40) else currentList.filterNot { it.id == id }
         saveProgress(context, filteredList + updatedItem)
     }
 
     suspend fun updateProgress(context: Context, manga: MangaProgressList) {
         val currentList = getProgress(context).first()
-        val filtered = currentList.filterNot { it.id == manga.id }
+        //take the list and trim it to 40
+        val filtered = if(currentList.size > 40) currentList.filterNot { it.id == manga.id }.subList(0, 40) else currentList.filterNot { it.id == manga.id }
         val updated = filtered + manga
         saveProgress(context, updated.reversed())
     }

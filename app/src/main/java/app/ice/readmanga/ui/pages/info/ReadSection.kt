@@ -136,16 +136,23 @@ fun ReadSection(
             OutlinedButton(
                 onClick = {
                     try {
-                        val savedChapterString = ((infoSharedViewModel.readChapters.value ?: 0f) + 1).toString()
+                        val savedChapterString =
+                            ((infoSharedViewModel.readChapters.value ?: 0f) + 1).toString()
                         val split = savedChapterString.split(".");
-                        val chapterString: String = if(split[1] == "0") split[0] else savedChapterString
+                        val chapterString: String =
+                            if (split[1] == "0") split[0] else savedChapterString
                         val chapter =
                             chapters.find {
-                                    it?.chapter == chapterString
+                                it?.chapter == chapterString
                             }
-                        if(chapter != null) {
-//                            val encodedUrl = URLEncoder.encode(chapter.link, "UTF-8")
-                            rootNavHostController.navigate(Routes.ReadRoute(chapterLink = chapter.link, chapterNumber = chapterString, id = infoSharedViewModel.id!!))
+                        if (chapter != null) {
+                            rootNavHostController.navigate(
+                                Routes.ReadRoute(
+                                    chapterLink = chapter.link,
+                                    chapterNumber = chapterString,
+                                    id = infoSharedViewModel.id!!,
+                                )
+                            )
                         }
                     } catch (err: Exception) {
                         showToast(context = context, "Couldn't navigate")
@@ -267,7 +274,7 @@ fun BottomSheetContent(
                         Routes.ReadRoute(
                             chapterLink = infoSharedViewModel.selectedChapterLink!!,
                             chapterNumber = infoSharedViewModel.selectedChapterNumber!!,
-                            id = infoSharedViewModel.id!!
+                            id = infoSharedViewModel.id!!,
                         )
                     )
                 }, modifier = Modifier
@@ -356,7 +363,13 @@ fun ChapterItem(
                                 )
                             )
                         }
-                        rootNavHostController.navigate(Routes.ReadRoute(chapterLink = chapter.link, chapterNumber = chapter.chapter, id = sharedViewModel.id!!))
+                        rootNavHostController.navigate(
+                            Routes.ReadRoute(
+                                chapterLink = chapter.link,
+                                chapterNumber = chapter.chapter,
+                                id = sharedViewModel.id!!,
+                            )
+                        )
                     },
                     onLongPress = {
                         sharedViewModel.selectedChapterLink = chapter.link

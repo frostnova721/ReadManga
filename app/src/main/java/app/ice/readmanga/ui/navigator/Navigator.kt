@@ -48,7 +48,7 @@ fun ReadMangaNavGraph(navController: NavHostController) {
                 rootNavController = navController,
                 chapterId = args.chapterLink,
                 chapterNumber = args.chapterNumber,
-                id = args.id
+                id = args.id,
             )
         }
 //        composable(

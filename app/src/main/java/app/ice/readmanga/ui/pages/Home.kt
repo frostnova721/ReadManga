@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
@@ -33,7 +35,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
@@ -60,14 +64,13 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun Home(rootController: NavHostController, barController: NavHostController) {
-    var recentsLoaded by rememberSaveable { mutableStateOf(false) }
+    var recentsLoaded by remember { mutableStateOf(false) }
     var trendingLoaded by rememberSaveable { mutableStateOf(false) }
 
-    var progressList by rememberSaveable {
-        mutableStateOf<List<MangaProgressList>>(emptyList())
+    val progressList = remember {
+        mutableStateListOf<MangaProgressList>()
     }
 
     var trendingList by rememberSaveable {
@@ -84,19 +87,22 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
             delay(5000)
             with(pagerState) {
                 val target = if (currentPage < trendingList.size - 1) currentPage + 1 else 0
-                pagerState.animateScrollToPage(page = target, animationSpec = tween(
-                    durationMillis = 400,
-                    easing = FastOutSlowInEasing
-                ))
+                pagerState.animateScrollToPage(
+                    page = target, animationSpec = tween(
+                        durationMillis = 400,
+                        easing = FastOutSlowInEasing
+                    )
+                )
             }
         }
     }
 
     LaunchedEffect(Unit) {
+        println("RECOMpoSIng!!")
         if (!recentsLoaded) {
             recentsLoaded = true
             cosco.launch {
-                progressList = MangaProgress().getProgress(context).first()
+                progressList.addAll(MangaProgress().getProgress(context).first())
             }
         }
         if (!trendingLoaded) {
@@ -152,8 +158,9 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                 AsyncImage(
                                     model = item.cover,
                                     contentDescription = null,
+                                    contentScale = ContentScale.Crop,
                                     modifier = Modifier
-                                        .height(180.dp)
+                                        .height(160.dp)
                                         .width(115.dp)
                                         .clip(
                                             RoundedCornerShape(10.dp)
@@ -253,53 +260,54 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                         }
                     }
                 } else {
-                    LazyRow(
+                    LazyHorizontalGrid(
+                        rows = GridCells.Fixed(2),
                         modifier = Modifier
                             .fillMaxWidth()
+                            .height(320.dp)
                             .padding(top = 15.dp)
                     ) {
-                        items(progressList.chunked(2).reversed()) { pair ->
-                            Column(modifier = Modifier.padding(end = 10.dp)) {
-                                pair.forEach {
-                                    Box(
-                                        modifier = Modifier
-                                            .padding(8.dp)
-                                            .height(115.dp)
-                                            .width(240.dp)
-                                            .background(MaterialTheme.colorScheme.secondaryContainer)
-                                            .clickable {
-                                                rootController.navigate(Routes.InfoRoute(id = it.id))
-                                            }
-                                    ) {
-                                        Row {
-                                            AsyncImage(
-                                                model = it.cover,
-                                                contentDescription = null,
-                                                modifier = Modifier.fillMaxHeight()
+                        items(progressList.size) { ind ->
+                            val it = progressList[ind]
+                            Box(
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .height(115.dp)
+                                    .width(260.dp)
+                                    .background(MaterialTheme.colorScheme.secondaryContainer)
+                                    .clickable {
+                                        rootController.navigate(Routes.InfoRoute(id = it.id))
+                                    }
+                            ) {
+                                Row {
+                                    AsyncImage(
+                                        model = it.cover,
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxHeight().padding(4.dp).clip(
+                                            RoundedCornerShape(10.dp))
+                                    )
+                                    Column {
+                                        Text(
+                                            it.title,
+                                            maxLines = 2,
+                                            fontSize = 16.sp,
+                                            overflow = TextOverflow.Ellipsis,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(
+                                                top = 10.dp,
+                                                start = 10.dp
                                             )
-                                            Column {
-                                                Text(
-                                                    it.title,
-                                                    maxLines = 2,
-                                                    fontSize = 16.sp,
-                                                    overflow = TextOverflow.Ellipsis,
-                                                    fontWeight = FontWeight.Bold,
-                                                    modifier = Modifier.padding(
-                                                        top = 10.dp,
-                                                        start = 5.dp
-                                                    )
-                                                )
-                                                Text(
-                                                    "${it.read ?: "??"} / ${it.total ?: "??"}",
-                                                    fontSize = 15.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    modifier = Modifier.padding(
-                                                        top = 5.dp,
-                                                        start = 5.dp
-                                                    )
-                                                )
-                                            }
-                                        }
+                                        )
+                                        Text(
+                                            "${it.read ?: "??"} / ${it.total ?: "??"}",
+                                            fontSize = 15.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            modifier = Modifier.padding(
+                                                top = 8.dp,
+                                                start = 10.dp
+                                            )
+                                        )
                                     }
                                 }
                             }
