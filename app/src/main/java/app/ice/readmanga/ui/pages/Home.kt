@@ -150,7 +150,7 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                 modifier = Modifier
                                     .padding(
                                         top = WindowInsets.statusBars.asPaddingValues()
-                                            .calculateTopPadding() + 80.dp,
+                                            .calculateTopPadding() + 85.dp,
                                         start = 30.dp,
                                         end = 30.dp
                                     )
@@ -284,8 +284,8 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                     AsyncImage(
                                         model = it.cover,
                                         contentDescription = null,
-                                        modifier = Modifier.fillMaxHeight().padding(4.dp).clip(
-                                            RoundedCornerShape(10.dp))
+                                        modifier = Modifier.fillMaxHeight().padding(5.dp).clip(
+                                            RoundedCornerShape(10.dp - 5.dp))
                                     )
                                     Column {
                                         Text(

@@ -1,8 +1,10 @@
 package app.ice.readmanga.ui.navigator
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -30,6 +32,7 @@ fun MainScreenBottomBarGraph(rootController: NavHostController, navController: N
 
 @Composable
 fun ReadMangaNavGraph(navController: NavHostController) {
+    val svm: InfoSharedViewModel = viewModel()
     NavHost(
         navController = navController,
         startDestination = "main_screen",
@@ -39,8 +42,11 @@ fun ReadMangaNavGraph(navController: NavHostController) {
         }
         composable<Routes.InfoRoute> { bse ->
             val id = bse.toRoute<Routes.InfoRoute>().id
-            val svm: InfoSharedViewModel = viewModel()
             Info(id = id, rootNavigator = navController, infoSharedViewModel = svm)
+            BackHandler {
+                svm.clearViewModel()
+                navController.navigateUp()
+            }
         }
         composable<Routes.ReadRoute> { bse ->
             val args = bse.toRoute<Routes.ReadRoute>()
@@ -49,6 +55,7 @@ fun ReadMangaNavGraph(navController: NavHostController) {
                 chapterId = args.chapterLink,
                 chapterNumber = args.chapterNumber,
                 id = args.id,
+                svm
             )
         }
 //        composable(

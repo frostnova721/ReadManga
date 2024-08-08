@@ -86,7 +86,7 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
         mutableStateOf<List<Chapters?>>(listOf(null))
     }
 
-    val source = MangaSources.MANGADEX
+    val source by rememberSaveable { mutableStateOf(infoSharedViewModel.source.value) }
 
     LaunchedEffect(Unit) {
         if (info == null) {
@@ -117,6 +117,7 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                     val eng = chaps.filter { item -> item.lang == "en" }
                     chapters = emptyList()
                     chapters = eng[0].chapters.reversed()
+                    infoSharedViewModel.addChapters(chapters)
                 } else {
                     chapters = emptyList()
                 }
@@ -159,7 +160,8 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                     Box(modifier = Modifier.padding(innerPadding)) {
                         Column(modifier = Modifier.fillMaxWidth()) {
                             OutlinedIconButton(onClick = {
-                                rootNavigator.popBackStack()
+                                infoSharedViewModel.clearViewModel()
+                                rootNavigator.navigateUp()
                             }) {
                                 Icon(FeatherIcons.ArrowLeft, contentDescription = null)
                             }

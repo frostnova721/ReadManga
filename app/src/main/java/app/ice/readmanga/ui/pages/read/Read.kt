@@ -35,6 +35,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -64,8 +66,10 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavHostController
 import app.ice.readmanga.core.local.MangaProgress
-import app.ice.readmanga.core.source_handler.MangaSources
 import app.ice.readmanga.core.source_handler.SourceHandler
+import app.ice.readmanga.types.Chapters
+import app.ice.readmanga.ui.pages.info.InfoSharedViewModel
+import app.ice.readmanga.utils.showToast
 import coil.compose.SubcomposeAsyncImage
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
@@ -84,10 +88,43 @@ fun Context.findActivity(): Activity? {
     return null
 }
 
+data class ChapterChangeResult(
+    val chapter: String,
+    val pages: List<String>?
+)
+
+suspend fun getNextChapter(
+    source: String,
+    currentChapterNumber: String,
+    chapterList: List<Chapters?>
+): ChapterChangeResult? {
+    val index = chapterList.indexOf(chapterList.first { it!!.chapter == currentChapterNumber })
+    val nextChapter = if (chapterList.size - 1 == index) return null else index + 1
+    val pages = SourceHandler(source).getPages(chapterList[nextChapter]!!.link)
+    return ChapterChangeResult(chapter = chapterList[nextChapter]!!.chapter, pages = pages)
+}
+
+suspend fun getPreviousChapter(
+    source: String,
+    currentChapterNumber: String,
+    chapterList: List<Chapters?>
+): ChapterChangeResult? {
+    val index = chapterList.indexOf(chapterList.first { it!!.chapter == currentChapterNumber })
+    val prevChapter = if (index == 0) return null else index - 1
+    val pages = SourceHandler(source).getPages(chapterList[prevChapter]!!.link)
+    return ChapterChangeResult(chapter = chapterList[prevChapter]!!.chapter, pages = pages)
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber: String, id: Int) {
+fun Read(
+    rootNavController: NavHostController,
+    chapterId: String,
+    chapterNumber: String,
+    id: Int,
+    infoSharedViewModel: InfoSharedViewModel
+) {
 
     val context = LocalContext.current
     val cosco = rememberCoroutineScope()
@@ -150,12 +187,14 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
         mutableStateOf(false)
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+
     LaunchedEffect(lazyListState) {
         snapshotFlow {
             lazyListState.firstVisibleItemIndex
         }.distinctUntilChanged().collect { index ->
-            if (!isScrollAnimating) sliderPosition = (index+2).toFloat()
-            val percent = (index / pages.size - 1) * 100
+            if (!isScrollAnimating) sliderPosition = (index + 2).toFloat()
+            val percent = (index / (pages.size.toFloat() - 1)) * 100
 
             //might change later!
             if ((percent >= tresholdPercentage) && !progressUpdated) {
@@ -164,7 +203,7 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                     id = id,
                     progress = (currentChapter.toFloatOrNull() ?: 0f)
                 )
-//                infoSharedViewModel.updateReadChapters(currentChapter.toFloatOrNull() ?: 0f)
+                infoSharedViewModel.updateReadChapters(currentChapter.toFloatOrNull() ?: 0f)
                 println("Updating to chapter: ${(currentChapter.toFloatOrNull() ?: 0f)}")
                 progressUpdated = true
 
@@ -174,7 +213,7 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
 
     LaunchedEffect(Unit) {
         if (pages[0] == null) {
-            val res = SourceHandler(MangaSources.MANGADEX).getPages(chapterId)
+            val res = SourceHandler(infoSharedViewModel.source.value).getPages(chapterId)
             if (res == null) {
                 println("null")
                 val toast = Toast.makeText(
@@ -190,6 +229,7 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
     }
 
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         modifier = Modifier.clickable(
             indication = null,
             interactionSource = interactionSource
@@ -281,7 +321,7 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                         )
                     }
                     Text(
-                        "Chapter: $chapterNumber",
+                        "Chapter: $currentChapter",
                         fontSize = 18.sp,
                         color = Color.White,
                         fontWeight = FontWeight.Bold,
@@ -333,7 +373,32 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                                 .padding(start = 10.dp, end = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Button(onClick = {}) {
+                            Button(onClick = {
+                                cosco.launch {
+                                    val prevPages = getPreviousChapter(
+                                        infoSharedViewModel.source.value,
+                                        currentChapter,
+                                        infoSharedViewModel.chapterList.value!!
+                                    )
+                                    if (prevPages?.pages == null) {
+                                        snackbarHostState.showSnackbar("Couldn't fetch previous chapter!")
+                                    } else {
+                                        pages = prevPages.pages
+
+                                        MangaProgress().updateProgressWithId(
+                                            context,
+                                            id = id,
+                                            progress = (currentChapter.toFloatOrNull() ?: 0f)
+                                        )
+                                        infoSharedViewModel.updateReadChapters(
+                                            currentChapter.toFloatOrNull() ?: 0f
+                                        )
+                                        println("Updating to chapter: ${(currentChapter.toFloatOrNull() ?: 0f)}")
+
+                                        currentChapter = prevPages.chapter
+                                    }
+                                }
+                            }) {
                                 Icon(FeatherIcons.SkipBack, contentDescription = "prev chapter")
                             }
                             Box(
@@ -350,7 +415,32 @@ fun Read(rootNavController: NavHostController, chapterId: String, chapterNumber:
                                     fontWeight = FontWeight.Bold
                                 )
                             }
-                            Button(onClick = {}) {
+                            Button(onClick = {
+                                cosco.launch {
+                                    val nextPages = getNextChapter(
+                                        infoSharedViewModel.source.value,
+                                        currentChapter,
+                                        infoSharedViewModel.chapterList.value!!
+                                    )
+                                    if (nextPages?.pages == null) {
+                                        snackbarHostState.showSnackbar("Couldn't fetch next chapter!")
+                                    } else {
+                                        pages = nextPages.pages
+
+                                        MangaProgress().updateProgressWithId(
+                                            context,
+                                            id = id,
+                                            progress = (currentChapter.toFloatOrNull() ?: 0f)
+                                        )
+                                        infoSharedViewModel.updateReadChapters(
+                                            currentChapter.toFloatOrNull() ?: 0f
+                                        )
+                                        println("Updating to chapter: ${(currentChapter.toFloatOrNull() ?: 0f)}")
+
+                                        currentChapter = nextPages.chapter
+                                    }
+                                }
+                            }) {
                                 Icon(FeatherIcons.SkipForward, contentDescription = "next chapter")
                             }
                         }

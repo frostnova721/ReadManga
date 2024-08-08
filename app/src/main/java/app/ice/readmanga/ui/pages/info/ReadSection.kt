@@ -105,7 +105,7 @@ fun ReadSection(
                 ) {
                     Icon(FeatherIcons.Folder, contentDescription = "source")
                     Text(
-                        infoSharedViewModel.selectedSource,
+                        infoSharedViewModel.source.value,
                         modifier = Modifier.padding(start = 5.dp)
                     )
                 }
@@ -295,7 +295,7 @@ fun BottomSheetContent(
             Button(
                 onClick = {
                     coroutineScope.launch {
-                        val urls = SourceHandler(infoSharedViewModel.selectedSource).getPages(
+                        val urls = SourceHandler(infoSharedViewModel.source.value).getPages(
                             infoSharedViewModel.selectedChapterLink ?: error("no link my guy!!!")
                         )
                         if (urls == null) Toast.makeText(

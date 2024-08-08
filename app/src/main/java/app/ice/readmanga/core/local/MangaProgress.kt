@@ -41,9 +41,11 @@ class MangaProgress {
 
     suspend fun updateProgressWithId(context: Context, id: Int, progress: Float) {
         val currentList = getProgress(context).first()
-        val updatedItem = currentList.first { it.id == id }
+        val toBeUpdatedItem = currentList.first { it.id == id }
+        val updatedItem = toBeUpdatedItem.copy(read = progress)
         val filteredList = if(currentList.size > 40) currentList.filterNot { it.id == id }.subList(0,40) else currentList.filterNot { it.id == id }
-        saveProgress(context, filteredList + updatedItem)
+        val updatedList = filteredList + updatedItem
+        saveProgress(context, updatedList.reversed())
     }
 
     suspend fun updateProgress(context: Context, manga: MangaProgressList) {
