@@ -8,6 +8,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,10 +20,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -36,6 +41,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -43,6 +49,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -64,10 +71,14 @@ import coil.compose.AsyncImage
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
 import compose.icons.feathericons.Calendar
+import compose.icons.feathericons.Heart
 import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 
-private suspend fun getChaptersReadForThisMangaOrManhuaOrWhatever(id: Int, context: Context): Float? {
+private suspend fun getChaptersReadForThisMangaOrManhuaOrWhatever(
+    id: Int,
+    context: Context
+): Float? {
     val mangas = MangaProgress().getProgress(context).first()
     val filteredOutItem = mangas.firstOrNull() { it.id == id }
     return filteredOutItem?.read
@@ -84,6 +95,10 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
 
     var chapters by rememberSaveable {
         mutableStateOf<List<Chapters?>>(listOf(null))
+    }
+
+    var favourited by rememberSaveable {
+        mutableStateOf(false)
     }
 
     val source by rememberSaveable { mutableStateOf(infoSharedViewModel.source.value) }
@@ -129,13 +144,15 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
 
     Scaffold { innerPadding ->
         if (info != null) {
-            Column(modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(
-                    bottom = WindowInsets.navigationBars
-                        .asPaddingValues()
-                        .calculateBottomPadding()
-                )) {
+            Column(
+                modifier = Modifier
+                    .verticalScroll(rememberScrollState())
+                    .padding(
+                        bottom = WindowInsets.navigationBars
+                            .asPaddingValues()
+                            .calculateBottomPadding()
+                    )
+            ) {
                 Box {
                     Box(
                         modifier = Modifier
@@ -159,11 +176,32 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                     }
                     Box(modifier = Modifier.padding(innerPadding)) {
                         Column(modifier = Modifier.fillMaxWidth()) {
-                            OutlinedIconButton(onClick = {
-                                infoSharedViewModel.clearViewModel()
-                                rootNavigator.navigateUp()
-                            }) {
-                                Icon(FeatherIcons.ArrowLeft, contentDescription = null)
+                            Row(
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                OutlinedIconButton(onClick = {
+                                    infoSharedViewModel.clearViewModel()
+                                    rootNavigator.navigateUp()
+                                }) {
+                                    Icon(FeatherIcons.ArrowLeft, contentDescription = null)
+                                }
+                                Icon(
+                                    if (favourited) Icons.Default.Favorite else Icons.Outlined.FavoriteBorder,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier
+                                        .padding(end = 15.dp)
+                                        .size(30.dp, 30.dp)
+                                        .pointerInput(Unit) {
+                                            detectTapGestures(
+                                                onTap = {
+                                                    favourited = !favourited
+                                                    showToast(context, "does nothing btw")
+                                                }
+                                            )
+                                        })
                             }
                             Row {
                                 Box(
@@ -181,8 +219,10 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                                         contentScale = ContentScale.FillBounds
                                     )
                                 }
-                                Column(modifier = Modifier
-                                    .padding(top = 50.dp, start = 20.dp, end = 30.dp)){
+                                Column(
+                                    modifier = Modifier
+                                        .padding(top = 50.dp, start = 20.dp, end = 30.dp)
+                                ) {
                                     Text(
                                         text = info!!.title.english ?: info!!.title.romaji ?: "",
                                         fontSize = 20.sp,
@@ -201,7 +241,11 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                                             .padding(top = 10.dp)
 
                                     )
-                                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center, modifier = Modifier.padding(top = 15.dp)) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center,
+                                        modifier = Modifier.padding(top = 15.dp)
+                                    ) {
                                         Button(
                                             onClick = {
                                                 showReadPage = !showReadPage
@@ -217,8 +261,20 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                                                 fontWeight = FontWeight.Bold
                                             )
                                         }
-                                        FilledIconButton(onClick = { Toast.makeText(context, "not implied yet!", Toast.LENGTH_SHORT).show() },) {
-                                            Icon(FeatherIcons.Calendar, contentDescription = null, modifier = Modifier.height(20.dp))
+                                        FilledIconButton(
+                                            onClick = {
+                                                Toast.makeText(
+                                                    context,
+                                                    "not implied yet!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            },
+                                        ) {
+                                            Icon(
+                                                FeatherIcons.Calendar,
+                                                contentDescription = null,
+                                                modifier = Modifier.height(20.dp)
+                                            )
                                         }
                                     }
                                 }
@@ -226,7 +282,10 @@ fun Info(id: Int, rootNavigator: NavHostController, infoSharedViewModel: InfoSha
                         }
                     }
                 }
-                if(showReadPage) ReadSection(chapters, infoSharedViewModel, rootNavigator) else InfoSection(info = info!!)
+                if (showReadPage) ReadSection(
+                    infoSharedViewModel,
+                    rootNavigator
+                ) else InfoSection(info = info!!)
             }
         } else {
             Column(

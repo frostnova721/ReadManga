@@ -19,10 +19,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -58,6 +62,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,7 +74,6 @@ import app.ice.readmanga.core.local.MangaProgress
 import app.ice.readmanga.core.source_handler.SourceHandler
 import app.ice.readmanga.types.Chapters
 import app.ice.readmanga.ui.pages.info.InfoSharedViewModel
-import app.ice.readmanga.utils.showToast
 import coil.compose.SubcomposeAsyncImage
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.ArrowLeft
@@ -156,10 +160,6 @@ fun Read(
         mutableStateOf(true)
     }
 
-    val showSliderIndication by remember {
-        mutableStateOf(false)
-    }
-
     var pages by rememberSaveable {
         mutableStateOf<List<String?>>(listOf(null))
     }
@@ -238,7 +238,7 @@ fun Read(
             modifier = Modifier
         ) {
             val state =
-                rememberTransformableState { zoomChange, panChange, rotationChange ->
+                rememberTransformableState { zoomChange, panChange, _ ->
                     scale = (scale * zoomChange).coerceIn(1f, 5f)
 
                     val extraWidth = (scale - 1) * constraints.maxWidth
@@ -310,7 +310,7 @@ fun Read(
                             )
                         )
                     )
-                    .padding(top = 60.dp)
+                    .padding(top = 50.dp)
             ) {
                 Row(horizontalArrangement = Arrangement.Center) {
                     IconButton(onClick = { rootNavController.navigateUp() }) {
@@ -374,7 +374,9 @@ fun Read(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Button(onClick = {
+                                pages = emptyList()
                                 cosco.launch {
+                                    lazyListState.scrollToItem(0, 0)
                                     val prevPages = getPreviousChapter(
                                         infoSharedViewModel.source.value,
                                         currentChapter,
@@ -396,6 +398,8 @@ fun Read(
                                         println("Updating to chapter: ${(currentChapter.toFloatOrNull() ?: 0f)}")
 
                                         currentChapter = prevPages.chapter
+                                        //set to false so that the next chapter gets saved too
+                                        progressUpdated = false
                                     }
                                 }
                             }) {
@@ -416,7 +420,9 @@ fun Read(
                                 )
                             }
                             Button(onClick = {
+                                pages = emptyList()
                                 cosco.launch {
+                                    lazyListState.scrollToItem(0, 0)
                                     val nextPages = getNextChapter(
                                         infoSharedViewModel.source.value,
                                         currentChapter,
@@ -438,6 +444,8 @@ fun Read(
                                         println("Updating to chapter: ${(currentChapter.toFloatOrNull() ?: 0f)}")
 
                                         currentChapter = nextPages.chapter
+                                        //set to false so that the next chapter gets saved too
+                                        progressUpdated = false
                                     }
                                 }
                             }) {

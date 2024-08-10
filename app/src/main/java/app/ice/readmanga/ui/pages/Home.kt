@@ -30,6 +30,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -60,6 +61,8 @@ import app.ice.readmanga.types.MangaProgressList
 import app.ice.readmanga.ui.navigator.Routes
 import app.ice.readmanga.ui.theme.Rubik
 import coil.compose.AsyncImage
+import compose.icons.FeatherIcons
+import compose.icons.feathericons.RefreshCw
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -68,6 +71,9 @@ import kotlinx.coroutines.launch
 fun Home(rootController: NavHostController, barController: NavHostController) {
     var recentsLoaded by remember { mutableStateOf(false) }
     var trendingLoaded by rememberSaveable { mutableStateOf(false) }
+    var trendingFetchFailed by rememberSaveable {
+        mutableStateOf(false)
+    }
 
     val progressList = remember {
         mutableStateListOf<MangaProgressList>()
@@ -109,6 +115,9 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
             trendingLoaded = true
             cosco.launch {
                 trendingList = Anilist().getTrending()
+                if(trendingList.isEmpty()) {
+                    trendingFetchFailed = true
+                }
             }
         }
     }
@@ -123,7 +132,28 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                     .fillMaxWidth()
 //                    .background(MaterialTheme.colorScheme.surfaceDim)
             ) {
-                if (trendingLoaded && trendingList.isNotEmpty()) {
+                if(trendingFetchFailed && trendingList.isEmpty()) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth().padding(
+                        top = WindowInsets.statusBars.asPaddingValues()
+                            .calculateTopPadding() + 85.dp,
+                        start = 30.dp,
+                        end = 30.dp
+                    )) {
+                        Text("Failed to fetch the trending!")
+                        IconButton(onClick = {
+                            trendingFetchFailed = false
+                            cosco.launch {
+                                trendingList = Anilist().getTrending()
+                                if(trendingList.isEmpty()) {
+                                    trendingFetchFailed = true
+                                }
+                            }
+                        }) {
+                          Icon(FeatherIcons.RefreshCw, contentDescription = null)
+                        }
+                    }
+                }
+                else if (trendingLoaded && trendingList.isNotEmpty()) {
                     HorizontalPager(state = pagerState) { page ->
                         val offset =
                             (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
@@ -284,8 +314,12 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                     AsyncImage(
                                         model = it.cover,
                                         contentDescription = null,
-                                        modifier = Modifier.fillMaxHeight().padding(5.dp).clip(
-                                            RoundedCornerShape(10.dp - 5.dp))
+                                        modifier = Modifier
+                                            .fillMaxHeight()
+                                            .padding(5.dp)
+                                            .clip(
+                                                RoundedCornerShape(10.dp - 5.dp)
+                                            )
                                     )
                                     Column {
                                         Text(

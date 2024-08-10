@@ -1,10 +1,8 @@
 package app.ice.readmanga.ui.pages.info
 
-import android.widget.Button
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
@@ -34,7 +31,6 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -64,15 +60,13 @@ import app.ice.readmanga.utils.showToast
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.BookOpen
 import compose.icons.feathericons.Download
-import compose.icons.feathericons.File
 import compose.icons.feathericons.Folder
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
-import java.net.URLEncoder
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReadSection(
-    chapters: List<Chapters?>,
     infoSharedViewModel: InfoSharedViewModel,
     rootNavHostController: NavHostController
 ) {
@@ -80,18 +74,47 @@ fun ReadSection(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var showSheet by remember { mutableStateOf(false) }
 
+    val cosco = rememberCoroutineScope()
+
     val context = LocalContext.current
+
+    val sourceSheetState = rememberModalBottomSheetState()
+    var showSourceSheet by remember {
+        mutableStateOf(false)
+    }
 
 
     fun changeSheetState(state: Boolean) {
         showSheet = state
     }
 
+    suspend fun changeSource(source: String) {
+        try {
+            val title = infoSharedViewModel.title ?: ""
+            val mangas = SourceHandler(source).search(title)
+            infoSharedViewModel.updateFoundTitle(mangas[0].title)
+            val chaps = SourceHandler(source).getChapters(mangas[0].id)
+            val chapters = mutableListOf<Chapters>()
+            if (chaps.isNotEmpty()) {
+                val eng = chaps.filter { item -> item.lang == "en" }
+                infoSharedViewModel.addChapters(emptyList())
+                chapters.addAll(eng[0].chapters.reversed())
+                infoSharedViewModel.addChapters(chapters)
+            } else {
+                infoSharedViewModel.addChapters(emptyList())
+            }
+        } catch (e: Exception) {
+            infoSharedViewModel.addChapters(emptyList())
+        }
+    }
+
     Column(modifier = Modifier.padding(top = 20.dp)) {
         Box(modifier = Modifier.padding(bottom = 10.dp)) {
             Row {
                 Button(
-                    onClick = { /*TODO*/ }, colors = ButtonColors(
+                    onClick = {
+                        showSourceSheet = true
+                    }, colors = ButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceDim,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                         disabledContentColor = Color.Gray,
@@ -105,12 +128,13 @@ fun ReadSection(
                 ) {
                     Icon(FeatherIcons.Folder, contentDescription = "source")
                     Text(
-                        infoSharedViewModel.source.value,
+                        infoSharedViewModel.source.collectAsState().value,
                         modifier = Modifier.padding(start = 5.dp)
                     )
                 }
                 Button(
-                    onClick = { /*TODO*/ }, colors = ButtonColors(
+                    onClick = {
+                    }, colors = ButtonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceDim,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                         disabledContentColor = Color.Gray,
@@ -132,7 +156,7 @@ fun ReadSection(
             }
         }
 
-        if (chapters.isNotEmpty()) {
+        if (infoSharedViewModel.chapterList.collectAsState().value?.isNotEmpty() == true || infoSharedViewModel.chapterList.collectAsState().value?.get(0) != null) {
             OutlinedButton(
                 onClick = {
                     try {
@@ -142,7 +166,7 @@ fun ReadSection(
                         val chapterString: String =
                             if (split[1] == "0") split[0] else savedChapterString
                         val chapter =
-                            chapters.find {
+                            infoSharedViewModel.chapterList.value?.find {
                                 it?.chapter == chapterString
                             }
                         if (chapter != null) {
@@ -175,7 +199,7 @@ fun ReadSection(
 
         ItemTitle(title = "Chapters", 20)
 
-        if (chapters.isNotEmpty() && chapters[0] == null) {
+        if (infoSharedViewModel.chapterList.collectAsState().value?.isNotEmpty() == true && infoSharedViewModel.chapterList.collectAsState().value?.get(0) == null) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier
@@ -184,7 +208,7 @@ fun ReadSection(
             ) {
                 CircularProgressIndicator()
             }
-        } else if (chapters.isEmpty()) Box(
+        } else if (infoSharedViewModel.chapterList.collectAsState().value?.isEmpty() == true) Box(
             contentAlignment = Alignment.Center, modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 20.dp)
@@ -201,9 +225,10 @@ fun ReadSection(
                 .heightIn(max = 500.dp)
                 .padding(start = 20.dp, end = 20.dp, top = 10.dp)
         ) {
-            items(chapters.size) { index ->
+            items(infoSharedViewModel.chapterList.value?.size ?: 0) { index ->
+                val chaps = infoSharedViewModel.chapterList.collectAsState().value!!
                 ChapterItem(
-                    chapter = chapters[index]!!,
+                    chapter = chaps[index]!!,
                     rootNavHostController = rootNavHostController,
                     sharedViewModel = infoSharedViewModel,
                     changeSheetState = { sheetState -> changeSheetState(sheetState) }
@@ -212,6 +237,24 @@ fun ReadSection(
         }
 
     }
+
+    if (showSourceSheet)
+        ModalBottomSheet(
+            onDismissRequest = {
+                showSourceSheet = false
+            },
+            windowInsets = WindowInsets(0, 0, 0, 0),
+            sheetState = sourceSheetState
+        ) {
+            SourceSheetContent(infoSharedViewModel = infoSharedViewModel, changeSource = { source ->
+                infoSharedViewModel.addChapters(listOf(null))
+                run {
+                    cosco.launch {
+                        changeSource(source)
+                    }
+                }
+            })
+        }
 
     if (showSheet)
         ModalBottomSheet(
@@ -230,6 +273,42 @@ fun ReadSection(
             )
         }
 
+}
+
+@Composable
+fun SourceSheetContent(infoSharedViewModel: InfoSharedViewModel, changeSource: (String) -> Unit) {
+    Column(
+        modifier = Modifier.padding(
+            bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding(),
+            start = 20.dp,
+            end = 20.dp
+        )
+    ) {
+        Text(
+            "Available Sources:",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 20.dp)
+        )
+        MangaSources.sourcesAsList.forEach {
+            Button(
+                onClick = {
+                    if(it == infoSharedViewModel.source.value) return@Button
+                    infoSharedViewModel.changeSource(it)
+                    changeSource(it)
+                }, shape = RoundedCornerShape(15.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = if (it != infoSharedViewModel.source.collectAsState().value) Color.Transparent else MaterialTheme.colorScheme.primary,
+                    contentColor = if (it != infoSharedViewModel.source.collectAsState().value) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onPrimary
+                ),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(65.dp)
+                    .padding(5.dp)
+            ) {
+                Text(it.replace("_", " "), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
 }
 
 @Composable
@@ -269,6 +348,7 @@ fun BottomSheetContent(
                                 total = null
                             )
                         )
+                        infoSharedViewModel.updateReadChapters(infoSharedViewModel.selectedChapterNumber!!.toFloat() - 1)
                     }
                     rootNavigator.navigate(
                         Routes.ReadRoute(
@@ -362,6 +442,8 @@ fun ChapterItem(
                                     total = null
                                 )
                             )
+                            sharedViewModel.updateReadChapters(chapter.chapter.toFloat() - 1)
+
                         }
                         rootNavHostController.navigate(
                             Routes.ReadRoute(
