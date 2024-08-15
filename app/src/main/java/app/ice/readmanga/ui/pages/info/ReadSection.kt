@@ -128,8 +128,8 @@ fun ReadSection(
                 ) {
                     Icon(FeatherIcons.Folder, contentDescription = "source")
                     Text(
-                        infoSharedViewModel.source.collectAsState().value,
-                        modifier = Modifier.padding(start = 5.dp)
+                        infoSharedViewModel.source.collectAsState().value.replace("_"," "),
+                        modifier = Modifier.padding(start = 8.dp)
                     )
                 }
                 Button(

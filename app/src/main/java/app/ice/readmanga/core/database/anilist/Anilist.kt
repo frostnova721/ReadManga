@@ -5,6 +5,7 @@ import app.ice.readmanga.types.AnilistSearchResult
 import app.ice.readmanga.types.AnilistTrendingResult
 import app.ice.readmanga.types.CharactersSimplified
 import app.ice.readmanga.types.MangaTitle
+import app.ice.readmanga.types.MangaTypes
 import app.ice.readmanga.types.RecommendationSimplified
 import app.ice.readmanga.types.anilistResponses.AnilistResponse
 import app.ice.readmanga.types.anilistResponses.components.CharacterName
@@ -158,5 +159,32 @@ class Anilist {
 
         return trendingItems
 
+    }
+
+    //return type is same as TrendingResult cus the expected item format is same
+    suspend fun getPopular(type: MangaTypes): List<AnilistTrendingResult> {
+        val query = AnilistQueries().popularQuery(type.country.countryCode)
+        val res = gqlRequest(url, query)
+        val media = res?.data?.page?.media ?: return emptyList();
+
+        val popularItems = mutableListOf<AnilistTrendingResult>()
+
+        media.forEach() { item ->
+            popularItems.add(
+                AnilistTrendingResult(
+                    id = item.id!!,
+                    title = MangaTitle(
+                        english = item.title?.english,
+                        romaji = item.title?.romaji,
+                    ),
+                    cover = item.cover.large,
+                    rating = item.averageScore,
+                    genres = item.genres,
+                    banner = item.banner
+                )
+            )
+        }
+
+        return popularItems
     }
 }

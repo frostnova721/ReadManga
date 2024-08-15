@@ -17,6 +17,7 @@ import app.ice.readmanga.ui.pages.Library
 import app.ice.readmanga.ui.pages.MainScreen
 import app.ice.readmanga.ui.pages.read.Read
 import app.ice.readmanga.ui.pages.Search
+import app.ice.readmanga.ui.pages.Settings
 import app.ice.readmanga.ui.pages.Updates
 import app.ice.readmanga.ui.pages.info.InfoSharedViewModel
 
@@ -57,6 +58,10 @@ fun ReadMangaNavGraph(navController: NavHostController) {
                 id = args.id,
                 svm
             )
+        }
+
+        composable<Routes.SettingsRoute> { bse ->
+            Settings(navController)
         }
 //        composable(
 //            "info/{id}",

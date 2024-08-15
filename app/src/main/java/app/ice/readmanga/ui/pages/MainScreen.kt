@@ -52,7 +52,7 @@ fun MainScreen(rootNavController: NavHostController) {
             BottomNavigationBar(navController = navController)
         },
         content = { innerPadding ->
-            Box(modifier = if(titles[currentRoute] != "ReadManga")Modifier.padding(innerPadding) else Modifier) {
+            Box(modifier = if(titles[currentRoute] != "ReadManga")Modifier.padding(innerPadding) else Modifier.padding(bottom = innerPadding.calculateBottomPadding())) {
                 MainScreenBottomBarGraph(rootNavController, navController = navController)
             }
 

@@ -11,4 +11,7 @@ object Routes {
 
     @Serializable
     data class ReadRoute(val chapterLink: String, val chapterNumber: String, val id: Int)
+
+    @Serializable
+    object SettingsRoute
 }

@@ -24,7 +24,9 @@ import androidx.compose.foundation.lazy.grid.LazyHorizontalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
@@ -32,6 +34,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -58,11 +61,14 @@ import app.ice.readmanga.core.database.anilist.Anilist
 import app.ice.readmanga.core.local.MangaProgress
 import app.ice.readmanga.types.AnilistTrendingResult
 import app.ice.readmanga.types.MangaProgressList
+import app.ice.readmanga.types.MangaTypes
+import app.ice.readmanga.ui.models.Cards
 import app.ice.readmanga.ui.navigator.Routes
 import app.ice.readmanga.ui.theme.Rubik
 import coil.compose.AsyncImage
 import compose.icons.FeatherIcons
 import compose.icons.feathericons.RefreshCw
+import compose.icons.feathericons.Settings
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -71,6 +77,9 @@ import kotlinx.coroutines.launch
 fun Home(rootController: NavHostController, barController: NavHostController) {
     var recentsLoaded by remember { mutableStateOf(false) }
     var trendingLoaded by rememberSaveable { mutableStateOf(false) }
+    var popularLoaded by rememberSaveable {
+        mutableStateOf(false)
+    }
     var trendingFetchFailed by rememberSaveable {
         mutableStateOf(false)
     }
@@ -81,6 +90,10 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
 
     var trendingList by rememberSaveable {
         mutableStateOf<List<AnilistTrendingResult>>(emptyList())
+    }
+
+    var popularList by rememberSaveable {
+        mutableStateOf(emptyList<AnilistTrendingResult>())
     }
 
     val cosco = rememberCoroutineScope()
@@ -115,8 +128,17 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
             trendingLoaded = true
             cosco.launch {
                 trendingList = Anilist().getTrending()
-                if(trendingList.isEmpty()) {
+                if (trendingList.isEmpty()) {
                     trendingFetchFailed = true
+                }
+            }
+        }
+        if (!popularLoaded) {
+            popularLoaded = true
+            cosco.launch {
+                popularList = Anilist().getPopular(MangaTypes.MANGA)
+                if (popularList.isEmpty()) {
+
                 }
             }
         }
@@ -124,7 +146,9 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
 
     Box {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState()),
         ) {
             Box(
                 modifier = Modifier
@@ -132,28 +156,34 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                     .fillMaxWidth()
 //                    .background(MaterialTheme.colorScheme.surfaceDim)
             ) {
-                if(trendingFetchFailed && trendingList.isEmpty()) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth().padding(
-                        top = WindowInsets.statusBars.asPaddingValues()
-                            .calculateTopPadding() + 85.dp,
-                        start = 30.dp,
-                        end = 30.dp
-                    )) {
+                if (trendingFetchFailed && trendingList.isEmpty()) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                top = WindowInsets.statusBars
+                                    .asPaddingValues()
+                                    .calculateTopPadding() + 85.dp,
+                                start = 30.dp,
+                                end = 30.dp
+                            )
+                    ) {
                         Text("Failed to fetch the trending!")
                         IconButton(onClick = {
                             trendingFetchFailed = false
                             cosco.launch {
                                 trendingList = Anilist().getTrending()
-                                if(trendingList.isEmpty()) {
+                                if (trendingList.isEmpty()) {
                                     trendingFetchFailed = true
                                 }
                             }
                         }) {
-                          Icon(FeatherIcons.RefreshCw, contentDescription = null)
+                            Icon(FeatherIcons.RefreshCw, contentDescription = null)
                         }
                     }
-                }
-                else if (trendingLoaded && trendingList.isNotEmpty()) {
+                } else if (trendingLoaded && trendingList.isNotEmpty()) {
                     HorizontalPager(state = pagerState) { page ->
                         val offset =
                             (pagerState.currentPage - page) + pagerState.currentPageOffsetFraction
@@ -254,7 +284,8 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 Row(
-                    horizontalArrangement = Arrangement.Start,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(
@@ -262,10 +293,16 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                 .asPaddingValues()
                                 .calculateTopPadding() + 10.dp,
                             bottom = 20.dp,
-                            start = 16.dp
+                            start = 16.dp,
+                            end = 16.dp
                         )
                 ) {
                     Text("ReadManga", fontSize = 26.sp, fontFamily = Rubik)
+                    IconButton(onClick = {
+                        rootController.navigate(Routes.SettingsRoute)
+                    }) {
+                        Icon(FeatherIcons.Settings, contentDescription = null)
+                    }
                 }
             }
             HeadTitle(string = "Continue Reading")
@@ -299,53 +336,35 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                     ) {
                         items(progressList.size) { ind ->
                             val it = progressList[ind]
-                            Box(
-                                modifier = Modifier
-                                    .padding(8.dp)
-                                    .clip(RoundedCornerShape(10.dp))
-                                    .height(115.dp)
-                                    .width(260.dp)
-                                    .background(MaterialTheme.colorScheme.secondaryContainer)
-                                    .clickable {
-                                        rootController.navigate(Routes.InfoRoute(id = it.id))
-                                    }
-                            ) {
-                                Row {
-                                    AsyncImage(
-                                        model = it.cover,
-                                        contentDescription = null,
-                                        modifier = Modifier
-                                            .fillMaxHeight()
-                                            .padding(5.dp)
-                                            .clip(
-                                                RoundedCornerShape(10.dp - 5.dp)
-                                            )
-                                    )
-                                    Column {
-                                        Text(
-                                            it.title,
-                                            maxLines = 2,
-                                            fontSize = 16.sp,
-                                            overflow = TextOverflow.Ellipsis,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(
-                                                top = 10.dp,
-                                                start = 10.dp
-                                            )
-                                        )
-                                        Text(
-                                            "${it.read ?: "??"} / ${it.total ?: "??"}",
-                                            fontSize = 15.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            modifier = Modifier.padding(
-                                                top = 8.dp,
-                                                start = 10.dp
-                                            )
-                                        )
-                                    }
-                                }
-                            }
+                            Cards(rootController).VerticalMangaCard(
+                                id = it.id,
+                                title = it.title,
+                                cover = it.cover,
+                                readProgress = it.read,
+                                totalChapters = it.total
+                            )
                         }
+                    }
+                }
+            }
+            HeadTitle(string = "Popular Mangas")
+            Box {
+                LazyHorizontalGrid(
+                    rows = GridCells.Fixed(2),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(320.dp)
+                        .padding(top = 15.dp)
+                ) {
+                    items(popularList.size) { ind ->
+                        val it = popularList[ind]
+                        Cards(rootController).VerticalMangaCard(
+                            id = it.id,
+                            title = it.title.english ?: it.title.english ?: "",
+                            cover = it.cover,
+                            readProgress = null,
+                            totalChapters = null,
+                        )
                     }
                 }
             }

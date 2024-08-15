@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,13 +22,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import app.ice.readmanga.ui.navigator.Routes
 import coil.ImageLoader
 import coil.compose.AsyncImage
@@ -42,7 +48,7 @@ class Cards(private val navController: NavController) {
             .width(130.dp)
             .padding(5.dp)
             .clickable {
-                navController.navigate(Routes.InfoRoute(id= id))
+                navController.navigate(Routes.InfoRoute(id = id))
             }
         ) {
             Column(
@@ -96,4 +102,71 @@ class Cards(private val navController: NavController) {
             }
         }
     }
+
+    @Composable
+    fun VerticalMangaCard(id: Int, title: String, cover: String, readProgress: Float?, totalChapters: Float? ) {
+        Box(
+            modifier = Modifier
+                .padding(8.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .height(115.dp)
+                .width(260.dp)
+                .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.2f))
+//                .border(1.dp, MaterialTheme.colorScheme.onSurface, shape = RoundedCornerShape(10.dp))
+                .clickable {
+                    navController.navigate(Routes.InfoRoute(id = id))
+                }
+        ) {
+            Row {
+                AsyncImage(
+                    model = cover,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(100.dp)
+                        .padding(5.dp)
+                        .clip(
+                            RoundedCornerShape(10.dp - 5.dp)
+                        )
+                )
+                Column {
+                    Text(
+                        title,
+                        maxLines = 2,
+                        fontSize = 16.sp,
+                        overflow = TextOverflow.Ellipsis,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(
+                            top = 10.dp,
+                            start = 10.dp,
+                            end = 10.dp
+                        )
+                    )
+                    Text(
+                        "${readProgress ?: "??"} / ${totalChapters ?: "??"}",
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.padding(
+                            top = 8.dp,
+                            start = 10.dp
+                        )
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+fun verticalCardPreview() {
+    val navController = rememberNavController()
+    Cards(navController).VerticalMangaCard(
+        id = 6942,
+        title = "Manga Title",
+        cover = "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/nx86123-yRZuDFrUEDGu.png",
+        readProgress = 5f,
+        totalChapters = 69f
+    )
 }

@@ -133,4 +133,29 @@ class AnilistQueries {
   }
 }
 """
+
+    val popularQuery: (String) -> String = { country ->
+        """
+        {
+          Page(perPage: 25) {
+            media(type: MANGA, sort: POPULARITY_DESC, countryOfOrigin: $country) {
+              title {
+                english
+                romaji
+              }
+              status
+              id
+              type
+              bannerImage
+              coverImage {
+                large
+              }
+              genres
+              averageScore
+            }
+          }
+        }
+
+    """.trimIndent()
+    }
 }

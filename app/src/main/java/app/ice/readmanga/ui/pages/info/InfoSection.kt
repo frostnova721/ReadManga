@@ -50,7 +50,7 @@ fun InfoSection(info: AnilistInfoResult) {
          .background(MaterialTheme.colorScheme.surfaceDim)
          .padding(10.dp)
       ) {
-         Text(text = info.description ?: "no description found",
+         Text(text = info.description?.replace(Regex("<[^>]*>"), "") ?: "no description found",
             maxLines = if(seeMoreSynopsis) Int.MAX_VALUE else 10,
             overflow = TextOverflow.Ellipsis,
             fontSize = 14.sp,
