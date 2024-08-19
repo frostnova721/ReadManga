@@ -61,8 +61,6 @@ data class AnilistMedia(
 
     @SerialName("relations")
     val relations: Relations? = null,
-
-
 )
 
 @Parcelize

@@ -66,5 +66,6 @@ data class AnilistTrendingResult(
     val genres: List<String>?,
     val rating: Int?,
     val banner: String?,
-    val cover: String
+    val cover: String,
+    val chapters: Int?,
 ): Parcelable

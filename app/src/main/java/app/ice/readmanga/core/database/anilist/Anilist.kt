@@ -152,7 +152,8 @@ class Anilist {
                     cover = item.cover.large,
                     rating = item.averageScore,
                     genres = item.genres,
-                    banner = item.banner
+                    banner = item.banner,
+                    chapters = item.chapters,
                 )
             )
         }
@@ -180,7 +181,8 @@ class Anilist {
                     cover = item.cover.large,
                     rating = item.averageScore,
                     genres = item.genres,
-                    banner = item.banner
+                    banner = item.banner,
+                    chapters = item.chapters
                 )
             )
         }

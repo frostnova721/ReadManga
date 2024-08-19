@@ -104,7 +104,7 @@ class Cards(private val navController: NavController) {
     }
 
     @Composable
-    fun VerticalMangaCard(id: Int, title: String, cover: String, readProgress: Float?, totalChapters: Float? ) {
+    fun VerticalMangaCard(id: Int, title: String, cover: String, readProgress: Float?, totalChapters: Int? ) {
         Box(
             modifier = Modifier
                 .padding(8.dp)
@@ -167,6 +167,6 @@ fun verticalCardPreview() {
         title = "Manga Title",
         cover = "https://s4.anilist.co/file/anilistcdn/media/manga/cover/medium/nx86123-yRZuDFrUEDGu.png",
         readProgress = 5f,
-        totalChapters = 69f
+        totalChapters = 69
     )
 }

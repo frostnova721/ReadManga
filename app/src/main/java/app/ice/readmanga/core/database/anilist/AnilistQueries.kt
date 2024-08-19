@@ -146,6 +146,7 @@ class AnilistQueries {
               status
               id
               type
+              chapters
               bannerImage
               coverImage {
                 large

@@ -341,7 +341,7 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                                 title = it.title,
                                 cover = it.cover,
                                 readProgress = it.read,
-                                totalChapters = it.total
+                                totalChapters = it.total?.toInt()
                             )
                         }
                     }
@@ -363,7 +363,7 @@ fun Home(rootController: NavHostController, barController: NavHostController) {
                             title = it.title.english ?: it.title.english ?: "",
                             cover = it.cover,
                             readProgress = null,
-                            totalChapters = null,
+                            totalChapters = it.chapters,
                         )
                     }
                 }
