@@ -44,7 +44,7 @@ class Downloader {
         WorkManager.getInstance(context).enqueue(downloadWorkRequest)
     }
 
-    suspend fun downloadAsPdf(urls: List<String>, fileName: String) {
+    suspend fun downloadAsPdf(urls: List<String>, fileName: String, onProgress: (Int) -> Unit ) {
 //        val imageArray: MutableList<ByteArray> = mutableListOf<ByteArray>()
         val pdfDocument = PdfDocument()
 
@@ -58,6 +58,8 @@ class Downloader {
             val canvas = page.canvas
             canvas.drawBitmap(bmp, 0f, 0f, null)
             pdfDocument.finishPage(page)
+            val progress = (index + 1) * 100 / urls.size
+            onProgress(progress)
         }
         val regex = "[^a-zA-Z0-9-\\s]".toRegex()
         writeToStorage(pdfDocument, fileName.replace(regex, ""))

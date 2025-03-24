@@ -10,5 +10,7 @@ val limeThemeColors = ThemeItem(
     secondary = Color(0xFFCAF979),
     primaryContainer = Color(0x8FCAF979),
     onPrimaryContainer = Color.Black,
-    onSurface = Color.Black,
+    onSurface = Color.White,
+    onBackground = Color.White,
+    onPrimary = Color.Black
 )

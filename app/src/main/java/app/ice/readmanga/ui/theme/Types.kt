@@ -10,4 +10,6 @@ data class ThemeItem(
     val primaryContainer: Color,
     val onPrimaryContainer: Color,
     val onSurface: Color,
+    val onBackground: Color,
+    val onPrimary: Color,
 )

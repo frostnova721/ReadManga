@@ -1,10 +1,8 @@
 package app.ice.readmanga.ui.navigator
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewModelScope
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -12,20 +10,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import app.ice.readmanga.ui.pages.Home
-import app.ice.readmanga.ui.pages.info.Info
 import app.ice.readmanga.ui.pages.Library
 import app.ice.readmanga.ui.pages.MainScreen
-import app.ice.readmanga.ui.pages.read.Read
 import app.ice.readmanga.ui.pages.Search
 import app.ice.readmanga.ui.pages.Settings
 import app.ice.readmanga.ui.pages.Updates
+import app.ice.readmanga.ui.pages.info.Info
 import app.ice.readmanga.ui.pages.info.InfoSharedViewModel
+import app.ice.readmanga.ui.pages.read.Read
+import app.ice.readmanga.ui.viewmodels.SettingsViewModel
 
 
 @Composable
 fun MainScreenBottomBarGraph(rootController: NavHostController, navController: NavHostController) {
     NavHost(navController = navController, startDestination = "home") {
-
         bottomBarGraph(rootController = rootController, barNavController = navController)
     }
 
@@ -34,6 +32,7 @@ fun MainScreenBottomBarGraph(rootController: NavHostController, navController: N
 @Composable
 fun ReadMangaNavGraph(navController: NavHostController) {
     val svm: InfoSharedViewModel = viewModel()
+    val preferencesViewModel: SettingsViewModel = hiltViewModel()
     NavHost(
         navController = navController,
         startDestination = "main_screen",
@@ -61,7 +60,7 @@ fun ReadMangaNavGraph(navController: NavHostController) {
         }
 
         composable<Routes.SettingsRoute> { bse ->
-            Settings(navController)
+            Settings(navController, preferencesViewModel)
         }
 //        composable(
 //            "info/{id}",

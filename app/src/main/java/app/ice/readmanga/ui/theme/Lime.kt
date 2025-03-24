@@ -22,16 +22,21 @@ fun Lime(
             surface = limeThemeColors.surface,
             primaryContainer = limeThemeColors.primaryContainer,
             onPrimaryContainer = limeThemeColors.onPrimaryContainer,
-
+            onSurface = limeThemeColors.onSurface,
+            onBackground = limeThemeColors.onBackground,
+            onPrimary = limeThemeColors.onPrimary,
         )
     } else {
         lightColorScheme(
             primary = limeThemeColors.primary,
-            background = limeThemeColors.background,
-            secondary = limeThemeColors.secondary,
-            surface = limeThemeColors.surface,
+//            background = limeThemeColors.background,
+//            secondary = limeThemeColors.secondary,
+//            surface = limeThemeColors.surface,
             primaryContainer = limeThemeColors.primaryContainer,
-            onPrimaryContainer = limeThemeColors.onPrimaryContainer,
+//            onPrimaryContainer = limeThemeColors.onPrimaryContainer,
+//            onSurface = limeThemeColors.onSurface,
+//            onBackground = limeThemeColors.onBackground,
+            onPrimary = limeThemeColors.onPrimary,
         )
     }
 

@@ -1,0 +1,7 @@
+syntax = "proto3";
+option java_package = "app.ice.readmanga";
+option java_multiple_files = true;
+
+message UserPreferences {
+  bool materialTheme = 1;
+}
