@@ -14,3 +14,15 @@ val limeThemeColors = ThemeItem(
     onBackground = Color.White,
     onPrimary = Color.Black
 )
+
+val limeLightColors = ThemeItem(
+    primary = Color(0xFF568700),
+    background = Color.Black,
+    surface = Color.Black,
+    secondary = Color(0xFFCAF979),
+    primaryContainer = Color(0x8FCAF979),
+    onPrimaryContainer = Color.Black,
+    onSurface = Color.White,
+    onBackground = Color.White,
+    onPrimary = Color.Black
+)

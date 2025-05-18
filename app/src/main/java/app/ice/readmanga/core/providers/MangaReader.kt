@@ -32,7 +32,6 @@ class MangaReader : Provider() {
 
             searchRes.add(SearchResult(id, title, cover))
         }
-
         return searchRes;
     }
 
@@ -48,7 +47,7 @@ class MangaReader : Provider() {
                 doc.select(".chapters-list-ul").first()?.children() ?: throw Error("NO ELEMENT")
 
             for (e in elements) {
-                val lang = e.attr("id").split("-")[0]
+                val lang = e.attr("id").split("-").first()
                 val langSpecificChapters = mutableListOf<Chapters>()
 
                 val subElements = e.children()

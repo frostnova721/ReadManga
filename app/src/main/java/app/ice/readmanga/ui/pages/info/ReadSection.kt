@@ -92,6 +92,12 @@ fun ReadSection(
         try {
             val title = infoSharedViewModel.title ?: ""
             val mangas = SourceHandler(source).search(title)
+
+            if(mangas.isEmpty()) {
+                Toast.makeText(context, "Empty search results!", Toast.LENGTH_SHORT).show()
+                return
+            };
+
             infoSharedViewModel.updateFoundTitle(mangas[0].title)
             val chaps = SourceHandler(source).getChapters(mangas[0].id)
             val chapters = mutableListOf<Chapters>()
