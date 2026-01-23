@@ -185,7 +185,7 @@ fun BottomSheet(
                 BottomSheetDefaults.DragHandle()
             },
             scrimColor = Color.Black.copy(alpha = .5f),
-            windowInsets = WindowInsets(0, 0, 0, 0)
+//            windowInsets = WindowInsets(0, 0, 0, 0)
         ) {
 
             Box(

@@ -248,7 +248,7 @@ fun ReadSection(
             onDismissRequest = {
                 showSourceSheet = false
             },
-            windowInsets = WindowInsets(0, 0, 0, 0),
+//            windowInsets = WindowInsets(0, 0, 0, 0),
             sheetState = sourceSheetState
         ) {
             SourceSheetContent(infoSharedViewModel = infoSharedViewModel, changeSource = { source ->
@@ -269,7 +269,7 @@ fun ReadSection(
                 infoSharedViewModel.selectedChapterNumber = ""
             },
             sheetState = sheetState,
-            windowInsets = WindowInsets(0, 0, 0, 0)
+//            windowInsets = WindowInsets(0, 0, 0, 0)
         ) {
             BottomSheetContent(
                 infoSharedViewModel = infoSharedViewModel,
